@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pacific Islands Digital Pulse</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f4f9ff;
+      color: #333;
+    }
+    header {
+      background: #0078D4;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    section {
+      padding: 40px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #0078D4;
+    }
+    .flex {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    iframe {
+      border: none;
+      width: 100%;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌐 Pacific Islands Digital Pulse</h1>
+  <p>Tracking Connectivity, Inclusion, and Governance across the Blue Pacific</p>
+</header>
+
+<section class="flex">
+  <div class="card" style="flex: 1 1 300px;">
+    <h2>🌍 Regional Overview</h2>
+    <p>Compare broadband, internet use, and 4G coverage across Melanesia, Micronesia, and Polynesia.</p>
+    <!-- Embed Power BI or Leaflet map -->
+    <iframe src="YOUR_MAP_IFRAME_URL"></iframe>
+  </div>
+
+  <div class="card" style="flex: 1 1 300px;">
+    <h2>📈 Indicator Explorer</h2>
+    <p>Explore relationships between coverage and usage.</p>
+    <!-- Chart.js or Power BI Scatter Plot Embed -->
+    <iframe src="YOUR_SCATTERPLOT_IFRAME_URL"></iframe>
+  </div>
+</section>
+
+<section class="card">
+  <h2>🛡️ Digital Governance</h2>
+  <p>Cybersecurity, e-Government readiness, and online services scores by country.</p>
+  <!-- Embed bar chart -->
+  <iframe src="YOUR_BAR_CHART_IFRAME_URL"></iframe>
+</section>
+
+<section class="card">
+  <h2>📍 Country Spotlight</h2>
+  <p>Select a nation to view all key metrics across indicators.</p>
+  <!-- Dropdown + dynamic cards idea -->
+  <p><strong>Country:</strong> <select>
+    <option>Fiji</option>
+    <option>Kiribati</option>
+    <option>Samoa</option>
+    <!-- Add all others -->
+  </select></p>
+  <p>Broadband: <strong>2.53</strong><br>Internet Use: <strong>68.9%</strong><br>4G Coverage: <strong>80%</strong></p>
+</section>
+
+</body>
+</html>
