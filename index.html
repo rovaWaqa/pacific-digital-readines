@@ -14,7 +14,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <!-- Header Section -->
+  <!-- Header -->
   <header class="bg-blue-700 text-white py-8 text-center shadow">
     <h1 class="text-3xl font-bold">🌐 Pacific Islands Digital Pulse</h1>
     <p class="text-lg mt-2">Tracking connectivity, inclusion, and digital readiness across the Blue Pacific</p>
@@ -29,23 +29,19 @@
           <h2 class="text-sm text-gray-900 font-semibold">Navigation</h2>
         </div>
       </div>
-
       <div class="flex gap-4 p-4 justify-center flex-wrap">
         <button onclick="scrollToSection('overview')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
           <i data-feather="globe" class="h-4 w-4"></i>
           <span class="text-sm font-medium">Overview Dashboard</span>
         </button>
-
         <button onclick="scrollToSection('trends')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
           <i data-feather="trending-up" class="h-4 w-4"></i>
           <span class="text-sm font-medium">Trends Over Time</span>
         </button>
-
         <button onclick="scrollToSection('cybersecurity')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
           <i data-feather="shield" class="h-4 w-4"></i>
           <span class="text-sm font-medium">Cybersecurity & E-Gov</span>
         </button>
-
         <button onclick="scrollToSection('indicators')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
           <i data-feather="users" class="h-4 w-4"></i>
           <span class="text-sm font-medium">Indicator Table</span>
@@ -54,8 +50,37 @@
     </div>
   </div>
 
+  <!-- Fixed Filters Panel -->
+  <div class="fixed top-32 right-6 z-30">
+    <div class="w-80 shadow-2xl bg-white bg-opacity-95 border border-blue-200 backdrop-blur-md rounded-lg">
+      <div class="px-4 py-3 border-b">
+        <div class="flex items-center gap-2">
+          <i data-feather="filter" class="h-4 w-4 text-blue-600"></i>
+          <h2 class="text-sm text-gray-900 font-semibold">Filters</h2>
+        </div>
+      </div>
+      <div class="px-4 py-4 space-y-6">
+        <div>
+          <label for="region" class="text-sm font-medium text-gray-700">Cultural Region</label>
+          <select id="region" class="w-full mt-2 border-gray-300 rounded-md">
+            <option value="all">All Regions</option>
+            <option value="Melanesia">Melanesia</option>
+            <option value="Micronesia">Micronesia</option>
+            <option value="Polynesia">Polynesia</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="year" class="text-sm font-medium text-gray-700">Year</label>
+          <input type="range" id="year" min="2018" max="2023" value="2023" step="1" class="w-full mt-2" />
+          <p class="text-xs text-gray-500 mt-1">Selected Year: <span id="yearDisplay">2023</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Content Sections -->
-  <section id="overview" class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow">
+  <section id="overview" class="max-w-6xl mx-auto mt-20 p-6 bg-white rounded-lg shadow">
     <h2 class="text-2xl font-bold text-blue-700 mb-2">📍 Overview Dashboard</h2>
     <p>Regional comparison of broadband, internet usage, and 4G coverage.</p>
   </section>
@@ -75,16 +100,20 @@
     <p>A searchable breakdown of key metrics: broadband, internet usage, 4G coverage, and more.</p>
   </section>
 
-  <!-- Scroll & Icons Init -->
+  <!-- Scripts -->
   <script>
     function scrollToSection(id) {
       const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
+
+    const yearSlider = document.getElementById('year');
+    const yearDisplay = document.getElementById('yearDisplay');
+    yearSlider.addEventListener('input', () => {
+      yearDisplay.textContent = yearSlider.value;
+    });
+
     feather.replace();
   </script>
-
 </body>
 </html>
