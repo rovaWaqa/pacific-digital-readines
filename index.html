@@ -46,7 +46,7 @@
     </div>
   </div>
 
-  <!-- Floating Filters -->
+  <!-- Floating Filter Panel -->
   <div class="fixed top-1/2 right-6 transform -translate-y-1/2 z-30">
     <div class="w-80 shadow-2xl bg-white bg-opacity-95 border border-blue-200 backdrop-blur-md rounded-lg">
       <div class="px-4 py-3 border-b flex items-center gap-2">
@@ -81,18 +81,18 @@
         <p id="avgInternet" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
       <div class="bg-blue-50 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Card 2 Title</h3>
-        <p class="text-3xl font-bold text-blue-700">--</p>
+        <h3 class="text-sm text-gray-600 mb-2">Card 2</h3>
+        <p id="card2" class="text-3xl font-bold text-blue-700">--</p>
       </div>
       <div class="bg-blue-50 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Card 3 Title</h3>
-        <p class="text-3xl font-bold text-blue-700">--</p>
+        <h3 class="text-sm text-gray-600 mb-2">Card 3</h3>
+        <p id="card3" class="text-3xl font-bold text-blue-700">--</p>
       </div>
     </div>
     <canvas id="chart" width="800" height="400"></canvas>
   </section>
 
-  <!-- Other Sections -->
+  <!-- Placeholder Sections -->
   <section id="trends" class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow">
     <h2 class="text-2xl font-bold text-blue-700 mb-2">📈 Trends Over Time</h2>
     <p>Time-series insights into digital metrics across the Pacific.</p>
@@ -108,7 +108,7 @@
     <p>Detailed metrics including broadband subscriptions, 4G coverage, internet usage, and policy scores.</p>
   </section>
 
-  <!-- Script -->
+  <!-- Scripts -->
   <script>
     function scrollToSection(id) {
       const el = document.getElementById(id);
@@ -123,7 +123,7 @@
       yearDisplay.textContent = yearSlider.value;
     });
 
-    fetch('Final Data.xlsx')
+    fetch('https://rovawaqa.github.io/pacific-digital-readines/Final%20Data.xlsx')
       .then(res => res.arrayBuffer())
       .then(data => {
         const workbook = XLSX.read(data, { type: 'array' });
@@ -135,6 +135,4 @@
           .map(row => +row["Proportion of individuals using the Internet"])
           .filter(val => !isNaN(val));
         const avgUsage = usageValues.length
-          ? (usageValues.reduce((sum, val) => sum + val, 0) / usageValues.length).toFixed(1)
-          : "--";
-        document.getElementById('avgInternet
+          ? (usageValues.reduce((sum, val) => sum + val, 0) / usageValues.length).to
