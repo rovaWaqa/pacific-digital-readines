@@ -5,6 +5,8 @@
   <title>Pacific Islands Digital Pulse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/feather-icons"></script>
   <style>
     html {
@@ -20,40 +22,39 @@
     <p class="text-lg mt-2">Tracking connectivity, inclusion, and digital readiness across the Blue Pacific</p>
   </header>
 
-  <!-- Navigation Menu -->
- <div class="sticky top-0 z-20 bg-gray-50 pt-6">
-  <div class="max-w-7xl mx-auto w-full">
-    <div class="bg-white shadow-2xl border border-blue-200 rounded-lg">
-      <div class="flex justify-between items-center px-4 py-3 border-b">
-        <div class="flex items-center gap-2">
-          <i data-feather="navigation" class="h-4 w-4 text-blue-600"></i>
-          <h2 class="text-sm text-gray-900 font-semibold">Navigation</h2>
+  <!-- Sticky Navigation Menu -->
+  <div class="sticky top-0 z-20 bg-gray-50 pt-6">
+    <div class="max-w-7xl mx-auto w-full">
+      <div class="bg-white shadow-2xl border border-blue-200 rounded-lg">
+        <div class="flex justify-between items-center px-4 py-3 border-b">
+          <div class="flex items-center gap-2">
+            <i data-feather="navigation" class="h-4 w-4 text-blue-600"></i>
+            <h2 class="text-sm text-gray-900 font-semibold">Navigation</h2>
+          </div>
         </div>
-      </div>
-      <div class="flex gap-4 p-4 justify-center flex-wrap">
-        <button onclick="scrollToSection('overview')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-          <i data-feather="globe" class="h-4 w-4"></i>
-          <span class="text-sm font-medium">Overview Dashboard</span>
-        </button>
-        <button onclick="scrollToSection('trends')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-          <i data-feather="trending-up" class="h-4 w-4"></i>
-          <span class="text-sm font-medium">Trends Over Time</span>
-        </button>
-        <button onclick="scrollToSection('cybersecurity')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-          <i data-feather="shield" class="h-4 w-4"></i>
-          <span class="text-sm font-medium">Cybersecurity & E-Gov</span>
-        </button>
-        <button onclick="scrollToSection('indicators')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-          <i data-feather="users" class="h-4 w-4"></i>
-          <span class="text-sm font-medium">Indicator Table</span>
-        </button>
+        <div class="flex gap-4 p-4 justify-center flex-wrap">
+          <button onclick="scrollToSection('overview')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
+            <i data-feather="globe" class="h-4 w-4"></i>
+            <span class="text-sm font-medium">Overview Dashboard</span>
+          </button>
+          <button onclick="scrollToSection('trends')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
+            <i data-feather="trending-up" class="h-4 w-4"></i>
+            <span class="text-sm font-medium">Trends Over Time</span>
+          </button>
+          <button onclick="scrollToSection('cybersecurity')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
+            <i data-feather="shield" class="h-4 w-4"></i>
+            <span class="text-sm font-medium">Cybersecurity & E-Gov</span>
+          </button>
+          <button onclick="scrollToSection('indicators')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
+            <i data-feather="users" class="h-4 w-4"></i>
+            <span class="text-sm font-medium">Indicator Table</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-
-  <!-- Filter Panel - Middle Right -->
+  <!-- Floating Filter Panel -->
   <div class="fixed top-1/2 right-6 transform -translate-y-1/2 z-30">
     <div class="w-80 shadow-2xl bg-white bg-opacity-95 border border-blue-200 backdrop-blur-md rounded-lg">
       <div class="px-4 py-3 border-b">
@@ -72,7 +73,6 @@
             <option value="Polynesia">Polynesia</option>
           </select>
         </div>
-
         <div>
           <label for="year" class="text-sm font-medium text-gray-700">Year</label>
           <input type="range" id="year" min="2018" max="2023" value="2023" step="1" class="w-full mt-2" />
@@ -82,10 +82,10 @@
     </div>
   </div>
 
-  <!-- Content Sections -->
+  <!-- Dashboard Sections -->
   <section id="overview" class="max-w-6xl mx-auto mt-20 p-6 bg-white rounded-lg shadow">
-    <h2 class="text-2xl font-bold text-blue-700 mb-2">📍 Overview Dashboard</h2>
-    <p>Regional comparison of broadband, internet usage, and 4G coverage.</p>
+    <h2 class="text-2xl font-bold text-blue-700 mb-4">📍 Overview Dashboard</h2>
+    <canvas id="chart" width="800" height="400"></canvas>
   </section>
 
   <section id="trends" class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow">
@@ -110,13 +110,54 @@
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
 
+    feather.replace();
+
+    // Load Excel File
+    fetch('Final Data.xlsx')
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+        const filtered = jsonData.filter(row =>
+          row["Fixed Internet broadband subscriptions per 100 inhabitants"] !== undefined &&
+          typeof row["Fixed Internet broadband subscriptions per 100 inhabitants"] === 'number'
+        );
+
+        const labels = filtered.map(row => row.Country);
+        const broadbandData = filtered.map(row => +row["Fixed Internet broadband subscriptions per 100 inhabitants"]);
+
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Broadband Subscriptions per 100 inhabitants',
+              data: broadbandData,
+              backgroundColor: 'rgba(0, 123, 255, 0.5)'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      })
+      .catch(err => console.error('Failed to load Excel file:', err));
+
+    // Slider interaction
     const yearSlider = document.getElementById('year');
     const yearDisplay = document.getElementById('yearDisplay');
     yearSlider.addEventListener('input', () => {
       yearDisplay.textContent = yearSlider.value;
     });
-
-    feather.replace();
   </script>
 </body>
 </html>
