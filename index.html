@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Pacific Islands Digital Pulse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 
@@ -16,18 +16,52 @@
 
   <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    .floating-panel {
+      position: fixed;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      z-index: 50;
+      background-color: white;
+      border: 1px solid #cbd5e0;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
   <!-- Header -->
   <header class="bg-blue-700 text-white py-6 text-center shadow">
     <h1 class="text-3xl font-bold">🌐 Pacific Islands Digital Pulse</h1>
-    <p class="text-lg mt-2">Tracking Internet Usage Across the Blue Pacific</p>
+    <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <!-- Content Container -->
-  <main class="max-w-6xl mx-auto px-4 py-10">
-    
+  <!-- Floating Filter Panel -->
+  <div class="floating-panel w-72">
+    <h2 class="text-lg font-semibold mb-2 text-blue-600 flex items-center gap-2">
+      <i data-feather="filter" class="w-4 h-4"></i> Filters
+    </h2>
+
+    <label class="block text-sm font-medium text-gray-700">Region</label>
+    <select id="regionFilter" class="w-full mt-1 mb-4 border-gray-300 rounded-md">
+      <option value="All">All Regions</option>
+      <option value="Melanesia">Melanesia</option>
+      <option value="Micronesia">Micronesia</option>
+      <option value="Polynesia">Polynesia</option>
+    </select>
+
+    <button id="downloadBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm font-medium">
+      ⬇️ Download Excel
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-16">
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
@@ -35,94 +69,118 @@
         <p id="avgInternet" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Card 2</h3>
-        <p class="text-3xl font-bold text-blue-700">--</p>
+        <h3 class="text-sm text-gray-600 mb-2">Avg. Mobile Subscriptions</h3>
+        <p id="avgMobile" class="text-3xl font-bold text-blue-700">--</p>
       </div>
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Card 3</h3>
-        <p class="text-3xl font-bold text-blue-700">--</p>
+        <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband Access</h3>
+        <p id="avgBroadband" class="text-3xl font-bold text-blue-700">--</p>
       </div>
     </div>
 
-    <!-- Chart Section -->
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
-      <canvas id="chart" width="800" height="400"></canvas>
+    <!-- Charts -->
+    <div class="space-y-12">
+      <div>
+        <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
+        <canvas id="internetChart"></canvas>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-blue-700 mb-4">📱 Mobile Subscriptions by Country</h2>
+        <canvas id="mobileChart"></canvas>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-blue-700 mb-4">🛰️ Fixed Broadband Access by Country</h2>
+        <canvas id="broadbandChart"></canvas>
+      </div>
     </div>
-
   </main>
 
-  <!-- JavaScript to Load Excel and Display Chart -->
+  <!-- Script -->
   <script>
     feather.replace();
 
-    // Change this to the RAW GitHub URL of your Excel file
-    const excelFileUrl = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+    const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+    let fullData = [];
 
-    fetch(excelFileUrl)
-      .then(response => response.arrayBuffer())
-      .then(data => {
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
+    const regionFilter = document.getElementById('regionFilter');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-        // Calculate average internet usage
-        const usageValues = jsonData
-          .map(row => +row["Proportion of individuals using the Internet"])
-          .filter(val => !isNaN(val));
-        const avgUsage = usageValues.length
-          ? (usageValues.reduce((sum, val) => sum + val, 0) / usageValues.length)
-          : 0;
-        document.getElementById('avgInternet').textContent = avgUsage.toFixed(1) + "%";
+    function updateCards(data) {
+      const avg = (key) => {
+        const vals = data.map(row => +row[key]).filter(v => !isNaN(v));
+        return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+      };
+      document.getElementById('avgInternet').textContent = avg("Proportion of individuals using the Internet").toFixed(1) + "%";
+      document.getElementById('avgMobile').textContent = avg("Mobile cellular subscriptions (per 100)").toFixed(1);
+      document.getElementById('avgBroadband').textContent = avg("Fixed broadband subscriptions (per 100)").toFixed(1);
+    }
 
-        // Prepare data for chart
-        const labels = jsonData.map(row => row["Country"]);
-        const values = jsonData.map(row => +row["Proportion of individuals using the Internet"] || 0);
+    function drawChart(canvasId, label, key, data) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const labels = data.map(row => row["Country"]);
+      const values = data.map(row => +row[key] || 0);
 
-        const ctx = document.getElementById('chart').getContext('2d');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Internet Usage (%)',
-              data: values,
-              backgroundColor: 'rgba(54, 162, 235, 0.6)',
-              borderColor: 'rgba(54, 162, 235, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              title: {
-                display: true,
-                text: 'Proportion of Individuals Using the Internet by Country'
-              }
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data: values,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: label }
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: '% Usage'
-                }
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Country'
-                }
-              }
+            x: {
+              ticks: { autoSkip: false }
             }
           }
-        });
-      })
-      .catch(error => {
-        console.error("Error loading Excel file:", error);
-        alert("Failed to load Excel data.");
+        }
       });
+    }
+
+    let internetChart, mobileChart, broadbandChart;
+
+    function filterAndUpdate() {
+      const region = regionFilter.value;
+      const filtered = region === "All" ? fullData : fullData.filter(d => d["Region"] === region);
+
+      updateCards(filtered);
+
+      internetChart?.destroy();
+      mobileChart?.destroy();
+      broadbandChart?.destroy();
+
+      internetChart = drawChart("internetChart", "% Internet Usage", "Proportion of individuals using the Internet", filtered);
+      mobileChart = drawChart("mobileChart", "Mobile Subs (per 100)", "Mobile cellular subscriptions (per 100)", filtered);
+      broadbandChart = drawChart("broadbandChart", "Broadband Subs (per 100)", "Fixed broadband subscriptions (per 100)", filtered);
+    }
+
+    fetch(excelURL)
+      .then(res => res.arrayBuffer())
+      .then(ab => {
+        const workbook = XLSX.read(ab, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        fullData = XLSX.utils.sheet_to_json(sheet);
+        filterAndUpdate();
+      });
+
+    regionFilter.addEventListener('change', filterAndUpdate);
+
+    downloadBtn.addEventListener('click', () => {
+      const worksheet = XLSX.utils.json_to_sheet(fullData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, worksheet, "Filtered Data");
+      XLSX.writeFile(wb, "Pacific-Digital-Indicators.xlsx");
+    });
   </script>
 </body>
 </html>
