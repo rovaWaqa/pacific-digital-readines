@@ -123,7 +123,7 @@
       yearDisplay.textContent = yearSlider.value;
     });
 
-    fetch('https://rovawaqa.github.io/pacific-digital-readines/Final%20Data.xlsx')
+    fetch('https://rovaWaqa.github.io/pacific-digital-readines/Final%20Data.xlsx')
       .then(res => res.arrayBuffer())
       .then(data => {
         const workbook = XLSX.read(data, { type: 'array' });
