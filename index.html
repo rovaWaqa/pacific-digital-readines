@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="="en">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Pacific Islands Digital Pulse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-
+  
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  
   <!-- SheetJS -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
+  
   <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
 
@@ -47,12 +47,12 @@
       <i data-feather="filter" class="w-4 h-4"></i> Filters
     </h2>
 
-    <label class="block text-sm font-medium text-gray-700">Region</label>
+    <label class="block text-sm font-medium text-gray-700">Cultural Region</label>
     <select id="regionFilter" class="w-full mt-1 mb-4 border-gray-300 rounded-md">
       <option value="All">All Regions</option>
-      <option value="MELANESIA">Melanesia</option>
-      <option value="MICRONESIA">Micronesia</option>
-      <option value="POLYNESIA">Polynesia</option>
+      <option value="Melanesia">Melanesia</option>
+      <option value="Micronesia">Micronesia</option>
+      <option value="Polynesia">Polynesia</option>
     </select>
 
     <button id="downloadBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm font-medium">
@@ -69,12 +69,12 @@
         <p id="avgInternet" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Avg. Mobile Subscriptions</h3>
-        <p id="avgMobile" class="text-3xl font-bold text-blue-700">--</p>
+        <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband Subscriptions</h3>
+        <p id="avgBroadband" class="text-3xl font-bold text-blue-700">--</p>
       </div>
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband Access</h3>
-        <p id="avgBroadband" class="text-3xl font-bold text-blue-700">--</p>
+        <h3 class="text-sm text-gray-600 mb-2">Avg. 4G Coverage</h3>
+        <p id="avg4G" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
     </div>
 
@@ -85,12 +85,12 @@
         <canvas id="internetChart"></canvas>
       </div>
       <div>
-        <h2 class="text-xl font-bold text-blue-700 mb-4">📱 Mobile Subscriptions by Country</h2>
-        <canvas id="mobileChart"></canvas>
+        <h2 class="text-xl font-bold text-blue-700 mb-4">🛰️ Fixed Broadband Subscriptions</h2>
+        <canvas id="broadbandChart"></canvas>
       </div>
       <div>
-        <h2 class="text-xl font-bold text-blue-700 mb-4">🛰️ Fixed Broadband Access by Country</h2>
-        <canvas id="broadbandChart"></canvas>
+        <h2 class="text-xl font-bold text-blue-700 mb-4">📶 4G Mobile Coverage</h2>
+        <canvas id="coverageChart"></canvas>
       </div>
     </div>
   </main>
@@ -105,18 +105,18 @@
     const regionFilter = document.getElementById('regionFilter');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    function updateCards(data) {
-      const avg = (key) => {
-        const vals = data
-          .map(row => row[key])
-          .filter(val => val !== undefined && val !== null && val !== "" && !isNaN(+val))
-          .map(val => +val);
-        return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
-      };
+    function cleanAverage(data, key) {
+      const vals = data
+        .map(row => row[key])
+        .filter(val => val !== undefined && val !== null && val !== "" && !isNaN(+val))
+        .map(val => +val);
+      return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+    }
 
-      document.getElementById('avgInternet').textContent = avg("Proportion of individuals using the Internet").toFixed(1) + "%";
-      document.getElementById('avgMobile').textContent = avg("Mobile cellular subscriptions (per 100)").toFixed(1);
-      document.getElementById('avgBroadband').textContent = avg("Fixed broadband subscriptions (per 100)").toFixed(1);
+    function updateCards(data) {
+      document.getElementById('avgInternet').textContent = cleanAverage(data, "Proportion of individuals using the Internet").toFixed(1) + "%";
+      document.getElementById('avgBroadband').textContent = cleanAverage(data, "Fixed Internet broadband subscriptions per 100 inhabitants").toFixed(1);
+      document.getElementById('avg4G').textContent = cleanAverage(data, "Proportion of population covered by at least a 4G mobile").toFixed(1) + "%";
     }
 
     function drawChart(canvasId, label, key, data) {
@@ -157,21 +157,21 @@
       });
     }
 
-    let internetChart, mobileChart, broadbandChart;
+    let internetChart, broadbandChart, coverageChart;
 
     function filterAndUpdate() {
-      const region = regionFilter.value;
-      const filtered = region === "All" ? fullData : fullData.filter(d => d["CULTURAL REGION"] === region);
+      const selectedRegion = regionFilter.value;
+      const filtered = selectedRegion === "All" ? fullData : fullData.filter(d => d["CULTURAL REGION"] === selectedRegion);
 
       updateCards(filtered);
 
       internetChart?.destroy();
-      mobileChart?.destroy();
       broadbandChart?.destroy();
+      coverageChart?.destroy();
 
       internetChart = drawChart("internetChart", "% Internet Usage", "Proportion of individuals using the Internet", filtered);
-      mobileChart = drawChart("mobileChart", "Mobile Subs (per 100)", "Mobile cellular subscriptions (per 100)", filtered);
-      broadbandChart = drawChart("broadbandChart", "Broadband Subs (per 100)", "Fixed broadband subscriptions (per 100)", filtered);
+      broadbandChart = drawChart("broadbandChart", "Broadband Subs per 100", "Fixed Internet broadband subscriptions per 100 inhabitants", filtered);
+      coverageChart = drawChart("coverageChart", "% Covered by 4G", "Proportion of population covered by at least a 4G mobile", filtered);
     }
 
     fetch(excelURL)
