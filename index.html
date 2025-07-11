@@ -4,135 +4,125 @@
   <meta charset="UTF-8" />
   <title>Pacific Islands Digital Pulse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SheetJS -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+  <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
-  <style>
-    html { scroll-behavior: smooth; }
-  </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
   <!-- Header -->
-  <header class="bg-blue-700 text-white py-8 text-center shadow">
+  <header class="bg-blue-700 text-white py-6 text-center shadow">
     <h1 class="text-3xl font-bold">🌐 Pacific Islands Digital Pulse</h1>
-    <p class="text-lg mt-2">Tracking connectivity, inclusion, and digital readiness across the Blue Pacific</p>
+    <p class="text-lg mt-2">Tracking Internet Usage Across the Blue Pacific</p>
   </header>
 
-  <!-- Sticky Navigation -->
-  <div class="sticky top-0 z-20 bg-gray-50 pt-6">
-    <div class="max-w-7xl mx-auto w-full">
-      <div class="bg-white shadow-2xl border border-blue-200 rounded-lg">
-        <div class="flex items-center gap-2 px-4 py-3 border-b">
-          <i data-feather="navigation" class="h-4 w-4 text-blue-600"></i>
-          <h2 class="text-sm text-gray-900 font-semibold">Navigation</h2>
-        </div>
-        <div class="flex gap-4 p-4 justify-center flex-wrap">
-          <button onclick="scrollToSection('overview')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-            <i data-feather="globe" class="h-4 w-4"></i><span class="text-sm font-medium">Overview</span>
-          </button>
-          <button onclick="scrollToSection('trends')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-            <i data-feather="trending-up" class="h-4 w-4"></i><span class="text-sm font-medium">Trends</span>
-          </button>
-          <button onclick="scrollToSection('cybersecurity')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-            <i data-feather="shield" class="h-4 w-4"></i><span class="text-sm font-medium">Cybersecurity</span>
-          </button>
-          <button onclick="scrollToSection('indicators')" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
-            <i data-feather="users" class="h-4 w-4"></i><span class="text-sm font-medium">Indicators</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating Filter Panel -->
-  <div class="fixed top-1/2 right-6 transform -translate-y-1/2 z-30">
-    <div class="w-80 shadow-2xl bg-white bg-opacity-95 border border-blue-200 backdrop-blur-md rounded-lg">
-      <div class="px-4 py-3 border-b flex items-center gap-2">
-        <i data-feather="filter" class="h-4 w-4 text-blue-600"></i>
-        <h2 class="text-sm text-gray-900 font-semibold">Filters</h2>
-      </div>
-      <div class="px-4 py-4 space-y-6">
-        <div>
-          <label for="region" class="text-sm font-medium text-gray-700">Cultural Region</label>
-          <select id="region" class="w-full mt-2 border-gray-300 rounded-md">
-            <option value="all">All Regions</option>
-            <option value="Melanesia">Melanesia</option>
-            <option value="Micronesia">Micronesia</option>
-            <option value="Polynesia">Polynesia</option>
-          </select>
-        </div>
-        <div>
-          <label for="year" class="text-sm font-medium text-gray-700">Year</label>
-          <input type="range" id="year" min="2018" max="2023" value="2023" step="1" class="w-full mt-2" />
-          <p class="text-xs text-gray-500 mt-1">Selected Year: <span id="yearDisplay">2023</span></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Overview Section -->
-  <section id="overview" class="max-w-6xl mx-auto mt-20 p-6 bg-white rounded-lg shadow">
-    <h2 class="text-2xl font-bold text-blue-700 mb-6">📍 Overview Dashboard</h2>
+  <!-- Content Container -->
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    
+    <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-      <div class="bg-blue-50 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Average Internet Usage</h3>
+      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
+        <h3 class="text-sm text-gray-600 mb-2">Avg. Internet Usage</h3>
         <p id="avgInternet" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
-      <div class="bg-blue-50 rounded-lg shadow p-6 text-center">
+      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
         <h3 class="text-sm text-gray-600 mb-2">Card 2</h3>
-        <p id="card2" class="text-3xl font-bold text-blue-700">--</p>
+        <p class="text-3xl font-bold text-blue-700">--</p>
       </div>
-      <div class="bg-blue-50 rounded-lg shadow p-6 text-center">
+      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
         <h3 class="text-sm text-gray-600 mb-2">Card 3</h3>
-        <p id="card3" class="text-3xl font-bold text-blue-700">--</p>
+        <p class="text-3xl font-bold text-blue-700">--</p>
       </div>
     </div>
-    <canvas id="chart" width="800" height="400"></canvas>
-  </section>
 
-  <!-- Placeholder Sections -->
-  <section id="trends" class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow">
-    <h2 class="text-2xl font-bold text-blue-700 mb-2">📈 Trends Over Time</h2>
-    <p>Time-series insights into digital metrics across the Pacific.</p>
-  </section>
+    <!-- Chart Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
+      <canvas id="chart" width="800" height="400"></canvas>
+    </div>
 
-  <section id="cybersecurity" class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow">
-    <h2 class="text-2xl font-bold text-blue-700 mb-2">🛡️ Cybersecurity & E-Gov</h2>
-    <p>Cybersecurity readiness, policy scores, and e-government indexes by country.</p>
-  </section>
+  </main>
 
-  <section id="indicators" class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow mb-20">
-    <h2 class="text-2xl font-bold text-blue-700 mb-2">📊 Indicator Table</h2>
-    <p>Detailed metrics including broadband subscriptions, 4G coverage, internet usage, and policy scores.</p>
-  </section>
-
-  <!-- Scripts -->
+  <!-- JavaScript to Load Excel and Display Chart -->
   <script>
-    function scrollToSection(id) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-
     feather.replace();
 
-    const yearSlider = document.getElementById('year');
-    const yearDisplay = document.getElementById('yearDisplay');
-    yearSlider.addEventListener('input', () => {
-      yearDisplay.textContent = yearSlider.value;
-    });
+    // Change this to the RAW GitHub URL of your Excel file
+    const excelFileUrl = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
 
-    fetch('https://rovaWaqa.github.io/pacific-digital-readines/Final%20Data.xlsx')
-      .then(res => res.arrayBuffer())
+    fetch(excelFileUrl)
+      .then(response => response.arrayBuffer())
       .then(data => {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-        // Average Internet Usage
+        // Calculate average internet usage
         const usageValues = jsonData
           .map(row => +row["Proportion of individuals using the Internet"])
           .filter(val => !isNaN(val));
         const avgUsage = usageValues.length
-          ? (usageValues.reduce((sum, val) => sum + val, 0) / usageValues.length).to
+          ? (usageValues.reduce((sum, val) => sum + val, 0) / usageValues.length)
+          : 0;
+        document.getElementById('avgInternet').textContent = avgUsage.toFixed(1) + "%";
+
+        // Prepare data for chart
+        const labels = jsonData.map(row => row["Country"]);
+        const values = jsonData.map(row => +row["Proportion of individuals using the Internet"] || 0);
+
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Internet Usage (%)',
+              data: values,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: 'Proportion of Individuals Using the Internet by Country'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: '% Usage'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Country'
+                }
+              }
+            }
+          }
+        });
+      })
+      .catch(error => {
+        console.error("Error loading Excel file:", error);
+        alert("Failed to load Excel data.");
+      });
+  </script>
+</body>
+</html>
