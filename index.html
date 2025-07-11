@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="="en">
 <head>
   <meta charset="UTF-8" />
   <title>Pacific Islands Digital Pulse</title>
@@ -107,9 +107,13 @@
 
     function updateCards(data) {
       const avg = (key) => {
-        const vals = data.map(row => +row[key]).filter(v => !isNaN(v));
+        const vals = data
+          .map(row => row[key])
+          .filter(val => val !== undefined && val !== null && val !== "" && !isNaN(+val))
+          .map(val => +val);
         return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
       };
+
       document.getElementById('avgInternet').textContent = avg("Proportion of individuals using the Internet").toFixed(1) + "%";
       document.getElementById('avgMobile').textContent = avg("Mobile cellular subscriptions (per 100)").toFixed(1);
       document.getElementById('avgBroadband').textContent = avg("Fixed broadband subscriptions (per 100)").toFixed(1);
@@ -118,7 +122,10 @@
     function drawChart(canvasId, label, key, data) {
       const ctx = document.getElementById(canvasId).getContext('2d');
       const labels = data.map(row => row["Country"]);
-      const values = data.map(row => +row[key] || 0);
+      const values = data.map(row => {
+        const val = row[key];
+        return val !== undefined && val !== "" && !isNaN(+val) ? +val : 0;
+      });
 
       return new Chart(ctx, {
         type: 'bar',
@@ -134,6 +141,9 @@
         },
         options: {
           responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
           scales: {
             y: {
               beginAtZero: true,
