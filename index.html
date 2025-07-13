@@ -107,6 +107,12 @@
       }
 
       function drawInternetMap(data) {
+        const mapContainer = document.getElementById('internetMap');
+        if (!mapContainer) {
+          console.error('Map container not found!');
+          return;
+        }
+
         if (window.internetMap) window.internetMap.remove();
 
         const countryAvgs = {};
@@ -171,15 +177,28 @@
 
       function filterAndUpdate() {
         drawUsageCoverageChart(fullData);
-        drawInternetMap(fullData);
+        setTimeout(() => {
+          const mapContainer = document.getElementById('internetMap');
+          if (!mapContainer) {
+            console.error("Map container not found");
+            return;
+          }
+          drawInternetMap(fullData);
+        }, 150); // delay to ensure DOM is ready
       }
 
-      fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        fullData = XLSX.utils.sheet_to_json(sheet);
-        filterAndUpdate();
-      });
+      fetch(excelURL)
+        .then(r => r.arrayBuffer())
+        .then(data => {
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          fullData = XLSX.utils.sheet_to_json(sheet);
+          filterAndUpdate();
+        })
+        .catch(error => {
+          console.error("Failed to load Excel file:", error);
+          alert("Error loading data.");
+        });
     });
   </script>
 </body>
