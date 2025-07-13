@@ -137,7 +137,7 @@
           attribution: '© OpenStreetMap contributors'
         }).addTo(window.internetMap);
 
-        fetch('./countries.geojson')
+        fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
           .then(res => res.json())
           .then(geojson => {
             const getColor = d => {
