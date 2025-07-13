@@ -157,19 +157,12 @@
       });
     }
 
-   function drawUsageCoverageChart(data) {
-  // Sort data by Internet Usage (descending)
-  const sorted = [...data].sort((a, b) => {
-    const valA = parseFloat(a["Proportion of individuals using the Internet"]) || 0;
-    const valB = parseFloat(b["Proportion of individuals using the Internet"]) || 0;
-    return valB - valA;
-  });
-
-  const labels = sorted.map(d => d["Country"]);
-  const internetData = sorted.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
-  const coverageData = sorted.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
-
+ function drawUsageCoverageChart(data) {
   const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
+  const labels = data.map(d => d["Country"]);
+  const internetData = data.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
+  const coverageData = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
+
   return new Chart(ctx, {
     type: 'bar',
     data: {
@@ -178,12 +171,12 @@
         {
           label: "Internet Usage (%)",
           data: internetData,
-          backgroundColor: "rgba(59, 130, 246, 0.8)"
+          backgroundColor: "rgba(59, 130, 246, 0.6)"
         },
         {
           label: "4G Coverage (%)",
           data: coverageData,
-          backgroundColor: "rgba(16, 185, 129, 0.8)"
+          backgroundColor: "rgba(16, 185, 129, 0.6)"
         }
       ]
     },
@@ -194,20 +187,19 @@
         tooltip: { mode: 'index', intersect: false }
       },
       scales: {
-        x: {
-          stacked: false,
-          ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }
-        },
         y: {
-          stacked: false,
           beginAtZero: true,
           max: 100,
-          title: { display: true, text: "Percentage (%)" }
+          title: { display: true, text: "Percentage" }
+        },
+        x: {
+          stacked: false
         }
       }
     }
   });
 }
+
 
 
 
