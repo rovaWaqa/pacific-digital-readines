@@ -38,49 +38,10 @@
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <div class="floating-panel w-72">
-    <h2 class="text-lg font-semibold mb-2 text-blue-600 flex items-center gap-2">
-      <i data-feather="filter" class="w-4 h-4"></i> Filters
-    </h2>
-    <label class="block text-sm font-medium text-gray-700">Cultural Region</label>
-    <select id="regionFilter" class="w-full mt-1 mb-4 border-gray-300 rounded-md">
-      <option value="All">All Regions</option>
-      <option value="MELANESIA">Melanesia</option>
-      <option value="MICRONESIA">Micronesia</option>
-      <option value="POLYNESIA">Polynesia</option>
-    </select>
-    <button id="downloadBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm font-medium">
-      ⬇️ Download Excel
-    </button>
-  </div>
-
   <main class="max-w-6xl mx-auto px-4 py-16">
-    <div class="grid grid-cols-1 sm:grid-cols-5 gap-6 mb-10">
-      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Avg. Internet Usage</h3>
-        <p id="avgInternet" class="text-3xl font-bold text-blue-700">--%</p>
-      </div>
-      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Avg. 4G Coverage</h3>
-        <p id="avg4G" class="text-3xl font-bold text-blue-700">--%</p>
-      </div>
-      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband</h3>
-        <p id="avgBroadband" class="text-3xl font-bold text-blue-700">--</p>
-      </div>
-      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Cyber Index Count</h3>
-        <p id="countCyberIndex" class="text-3xl font-bold text-blue-700">--</p>
-      </div>
-      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">E-Gov Index Count</h3>
-        <p id="countEGovIndex" class="text-3xl font-bold text-blue-700">--</p>
-      </div>
-    </div>
-
-    <!-- Average Internet & 4G Coverage Bar Chart -->
-    <div class="mt-12">
-      <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Average Internet vs 4G Coverage by Country</h2>
+    <!-- Bar Chart -->
+    <div>
+      <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
       <canvas id="avgUsageCoverageChart"></canvas>
     </div>
 
@@ -89,86 +50,12 @@
       <h2 class="text-xl font-bold text-blue-700 mb-4">🗺️ Internet Usage Map (Average by Country)</h2>
       <div id="internetMap"></div>
     </div>
-
-    <div class="space-y-12 mt-16">
-      <div>
-        <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
-        <canvas id="internetChart"></canvas>
-      </div>
-      <div>
-        <h2 class="text-xl font-bold text-blue-700 mb-4">🛰️ Fixed Broadband Subscriptions</h2>
-        <canvas id="broadbandChart"></canvas>
-      </div>
-      <div>
-        <h2 class="text-xl font-bold text-blue-700 mb-4">📶 4G Mobile Coverage</h2>
-        <canvas id="coverageChart"></canvas>
-      </div>
-    </div>
-
-    <div class="mt-16">
-      <h2 class="text-xl font-bold text-blue-700 mb-4">📋 Indicator Heatmap Table</h2>
-      <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-800">
-          <thead class="bg-blue-100">
-            <tr>
-              <th class="px-4 py-2 text-left">Country</th>
-              <th class="px-4 py-2 text-left">Internet Usage</th>
-              <th class="px-4 py-2 text-left">4G Coverage</th>
-              <th class="px-4 py-2 text-left">Broadband</th>
-            </tr>
-          </thead>
-          <tbody id="heatmapBody" class="divide-y divide-gray-100">
-            <!-- Populated by JS -->
-          </tbody>
-        </table>
-      </div>
-    </div>
   </main>
 
   <script>
     feather.replace();
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
     let fullData = [];
-
-    const regionFilter = document.getElementById('regionFilter');
-    const downloadBtn = document.getElementById('downloadBtn');
-
-    function cleanAverage(data, key) {
-      const vals = data.map(row => row[key]).filter(v => v !== "" && !isNaN(v)).map(Number);
-      return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
-    }
-
-    function getColor(value, min, max) {
-      if (value === null || value === "" || isNaN(value)) return "#f87171";
-      const percent = (value - min) / (max - min);
-      const shade = Math.round(255 - percent * 155);
-      return `rgb(${shade}, ${shade}, 255)`;
-    }
-
-    function updateCards(data) {
-      document.getElementById('avgInternet').textContent = cleanAverage(data, "Proportion of individuals using the Internet").toFixed(1) + "%";
-      document.getElementById('avgBroadband').textContent = cleanAverage(data, "Fixed Internet broadband subscriptions per 100 inhabitants").toFixed(1);
-      document.getElementById('avg4G').textContent = cleanAverage(data, "Proportion of population covered by at least a 4G mobile").toFixed(1) + "%";
-      document.getElementById('countCyberIndex').textContent = data.filter(d => d["National Cyber Security Index"]).length;
-      document.getElementById('countEGovIndex').textContent = data.filter(d => d[" E-Goverment Index"]).length;
-    }
-
-    function drawChart(canvasId, label, key, data) {
-      const ctx = document.getElementById(canvasId).getContext('2d');
-      const labels = data.map(row => row["Country"]);
-      const values = data.map(row => parseFloat(row[key]) || 0);
-      return new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{ label, data: values, backgroundColor: 'rgba(54,162,235,0.6)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1 }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
 
     function drawUsageCoverageChart(data) {
       const grouped = {};
@@ -253,7 +140,8 @@
         attribution: '© OpenStreetMap contributors'
       }).addTo(window.internetMap);
 
-      fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+      // 👉 Load GeoJSON from same directory
+      fetch('./countries.geojson')
         .then(res => res.json())
         .then(geojson => {
           const getColor = d => {
@@ -291,45 +179,9 @@
         });
     }
 
-    function renderHeatmapTable(data) {
-      const tbody = document.getElementById("heatmapBody");
-      tbody.innerHTML = "";
-      const getVals = key => data.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
-      const ranges = {
-        internet: [Math.min(...getVals("Proportion of individuals using the Internet")), Math.max(...getVals("Proportion of individuals using the Internet"))],
-        coverage: [Math.min(...getVals("Proportion of population covered by at least a 4G mobile")), Math.max(...getVals("Proportion of population covered by at least a 4G mobile"))],
-        broadband: [Math.min(...getVals("Fixed Internet broadband subscriptions per 100 inhabitants")), Math.max(...getVals("Fixed Internet broadband subscriptions per 100 inhabitants"))],
-      };
-      data.forEach(row => {
-        const internet = parseFloat(row["Proportion of individuals using the Internet"]);
-        const coverage = parseFloat(row["Proportion of population covered by at least a 4G mobile"]);
-        const broadband = parseFloat(row["Fixed Internet broadband subscriptions per 100 inhabitants"]);
-        tbody.innerHTML += `
-          <tr>
-            <td class="px-4 py-2 font-medium hover:underline cursor-pointer" onclick="drillThrough('${row['Country']}')">${row["Country"]}</td>
-            <td class="px-4 py-2" style="background-color:${getColor(internet, ...ranges.internet)}">${isNaN(internet) ? "N/A" : internet}</td>
-            <td class="px-4 py-2" style="background-color:${getColor(coverage, ...ranges.coverage)}">${isNaN(coverage) ? "N/A" : coverage}</td>
-            <td class="px-4 py-2" style="background-color:${getColor(broadband, ...ranges.broadband)}">${isNaN(broadband) ? "N/A" : broadband}</td>
-          </tr>`;
-      });
-    }
-
-    let internetChart, broadbandChart, coverageChart, avgUsageCoverageChart;
-
     function filterAndUpdate() {
-      const region = regionFilter.value;
-      const filtered = region === "All" ? fullData : fullData.filter(d => d["CULTURAL REGION"] === region);
-      updateCards(filtered);
-      internetChart?.destroy();
-      broadbandChart?.destroy();
-      coverageChart?.destroy();
-      avgUsageCoverageChart?.destroy();
-      internetChart = drawChart("internetChart", "Internet Usage", "Proportion of individuals using the Internet", filtered);
-      broadbandChart = drawChart("broadbandChart", "Broadband Subscriptions", "Fixed Internet broadband subscriptions per 100 inhabitants", filtered);
-      coverageChart = drawChart("coverageChart", "4G Coverage", "Proportion of population covered by at least a 4G mobile", filtered);
-      avgUsageCoverageChart = drawUsageCoverageChart(filtered);
-      renderHeatmapTable(filtered);
-      drawInternetMap(filtered);
+      drawUsageCoverageChart(fullData);
+      drawInternetMap(fullData);
     }
 
     fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
@@ -338,19 +190,6 @@
       fullData = XLSX.utils.sheet_to_json(sheet);
       filterAndUpdate();
     });
-
-    regionFilter.addEventListener('change', filterAndUpdate);
-    downloadBtn.addEventListener('click', () => {
-      const ws = XLSX.utils.json_to_sheet(fullData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Filtered Data");
-      XLSX.writeFile(wb, "Pacific-Digital-Indicators.xlsx");
-    });
-
-    function drillThrough(country) {
-      alert(`Drill-through: You clicked ${country}`);
-      // Optionally navigate to detailed page here
-    }
   </script>
 </body>
 </html>
