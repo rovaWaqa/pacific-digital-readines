@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     html { scroll-behavior: smooth; }
@@ -43,12 +42,18 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      feather.replace();
-
       const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+      const geojsonURL = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+
       let fullData = [];
 
-      function drawUsageCoverageChart(data) {
+      const countryNameMap = {
+        "Micronesia": "Micronesia (Federated States of)",
+        "USA": "United States of America",
+        // Add more if needed
+      };
+
+      function drawChart(data) {
         const grouped = {};
         data.forEach(d => {
           const country = d["Country"];
@@ -70,8 +75,7 @@
           coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
         }
 
-        const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
-        return new Chart(ctx, {
+        new Chart(document.getElementById("avgUsageCoverageChart").getContext("2d"), {
           type: 'bar',
           data: {
             labels,
@@ -99,22 +103,13 @@
                 beginAtZero: true,
                 max: 100,
                 title: { display: true, text: "Percentage" }
-              },
-              x: { stacked: false }
+              }
             }
           }
         });
       }
 
-      function drawInternetMap(data) {
-        const mapContainer = document.getElementById('internetMap');
-        if (!mapContainer) {
-          console.error('Map container not found!');
-          return;
-        }
-
-        if (window.internetMap) window.internetMap.remove();
-
+      function drawMap(data) {
         const countryAvgs = {};
         const grouped = {};
         data.forEach(d => {
@@ -132,12 +127,12 @@
           }
         }
 
-        window.internetMap = L.map('internetMap').setView([-10, 175], 3);
+        const map = L.map('internetMap').setView([-10, 175], 3);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
-        }).addTo(window.internetMap);
+        }).addTo(map);
 
-        fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+        fetch(geojsonURL)
           .then(res => res.json())
           .then(geojson => {
             const getColor = d => {
@@ -153,7 +148,8 @@
             L.geoJSON(geojson, {
               style: feature => {
                 const name = feature.properties.ADMIN;
-                const val = countryAvgs[name];
+                const matchedName = countryNameMap[name] || name;
+                const val = countryAvgs[matchedName];
                 return {
                   fillColor: getColor(val),
                   weight: 1,
@@ -164,27 +160,12 @@
               },
               onEachFeature: (feature, layer) => {
                 const name = feature.properties.ADMIN;
-                const val = countryAvgs[name];
-                if (val !== undefined) {
-                  layer.bindTooltip(`${name}: ${val.toFixed(1)}%`);
-                } else {
-                  layer.bindTooltip(`${name}: N/A`);
-                }
+                const matchedName = countryNameMap[name] || name;
+                const val = countryAvgs[matchedName];
+                layer.bindTooltip(`${name}: ${val ? val.toFixed(1) + '%' : 'N/A'}`);
               }
-            }).addTo(window.internetMap);
+            }).addTo(map);
           });
-      }
-
-      function filterAndUpdate() {
-        drawUsageCoverageChart(fullData);
-        setTimeout(() => {
-          const mapContainer = document.getElementById('internetMap');
-          if (!mapContainer) {
-            console.error("Map container not found");
-            return;
-          }
-          drawInternetMap(fullData);
-        }, 150); // delay to ensure DOM is ready
       }
 
       fetch(excelURL)
@@ -193,7 +174,8 @@
           const workbook = XLSX.read(data, { type: 'array' });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           fullData = XLSX.utils.sheet_to_json(sheet);
-          filterAndUpdate();
+          drawChart(fullData);
+          setTimeout(() => drawMap(fullData), 100); // slight delay to ensure map container is ready
         })
         .catch(error => {
           console.error("Failed to load Excel file:", error);
