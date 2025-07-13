@@ -158,41 +158,46 @@
     }
 
     function drawUsageCoverageChart(data) {
-      const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
-      const labels = data.map(d => d["Country"]);
-      const internetData = data.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
-      const coverageData = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
+  const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
+  const labels = data.map(d => d["Country"]);
+  const internetData = data.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
+  const coverageData = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
 
-      return new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Internet Usage (%)",
-              data: internetData,
-              backgroundColor: "rgba(59, 130, 246, 0.6)"
-            },
-            {
-              label: "4G Coverage (%)",
-              data: coverageData,
-              backgroundColor: "rgba(16, 185, 129, 0.6)"
-            }
-          ]
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Internet Usage (%)",
+          data: internetData,
+          backgroundColor: "rgba(59, 130, 246, 0.8)"
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          scales: {
-            y: { beginAtZero: true, max: 100 },
-            x: { stacked: false }
-          }
+        {
+          label: "4G Coverage (%)",
+          data: coverageData,
+          backgroundColor: "rgba(16, 185, 129, 0.8)"
         }
-      });
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          max: 200,
+          title: { display: true, text: "Total Percentage" }
+        }
+      }
     }
+  });
+}
 
     function renderHeatmapTable(data) {
       const tbody = document.getElementById("heatmapBody");
