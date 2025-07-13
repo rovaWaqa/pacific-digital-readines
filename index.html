@@ -4,19 +4,10 @@
   <meta charset="UTF-8" />
   <title>Pacific Islands Digital Pulse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- SheetJS -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  
-  <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
-
   <style>
     html { scroll-behavior: smooth; }
     .floating-panel {
@@ -35,18 +26,15 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <!-- Header -->
   <header class="bg-blue-700 text-white py-6 text-center shadow">
     <h1 class="text-3xl font-bold">🌐 Pacific Islands Digital Pulse</h1>
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <!-- Floating Filter Panel -->
   <div class="floating-panel w-72">
     <h2 class="text-lg font-semibold mb-2 text-blue-600 flex items-center gap-2">
       <i data-feather="filter" class="w-4 h-4"></i> Filters
     </h2>
-
     <label class="block text-sm font-medium text-gray-700">Cultural Region</label>
     <select id="regionFilter" class="w-full mt-1 mb-4 border-gray-300 rounded-md">
       <option value="All">All Regions</option>
@@ -54,15 +42,12 @@
       <option value="MICRONESIA">Micronesia</option>
       <option value="POLYNESIA">Polynesia</option>
     </select>
-
     <button id="downloadBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm font-medium">
       ⬇️ Download Excel
     </button>
   </div>
 
-  <!-- Main Content -->
   <main class="max-w-6xl mx-auto px-4 py-16">
-    <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-5 gap-6 mb-10">
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
         <h3 class="text-sm text-gray-600 mb-2">Avg. Internet Usage</h3>
@@ -73,20 +58,19 @@
         <p id="avg4G" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband Subscriptions</h3>
+        <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband</h3>
         <p id="avgBroadband" class="text-3xl font-bold text-blue-700">--</p>
       </div>
       <div class="bg-green-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">Cyber Security Index Count</h3>
+        <h3 class="text-sm text-gray-600 mb-2">Cyber Index Count</h3>
         <p id="countCyberIndex" class="text-3xl font-bold text-green-700">--</p>
       </div>
       <div class="bg-green-100 rounded-lg shadow p-6 text-center">
-        <h3 class="text-sm text-gray-600 mb-2">E-Government Index Count</h3>
+        <h3 class="text-sm text-gray-600 mb-2">E-Gov Index Count</h3>
         <p id="countEGovIndex" class="text-3xl font-bold text-green-700">--</p>
       </div>
     </div>
 
-    <!-- Charts -->
     <div class="space-y-12">
       <div>
         <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
@@ -102,34 +86,28 @@
       </div>
     </div>
 
-    <!-- Data Table -->
     <div class="mt-16">
-      <h2 class="text-xl font-bold text-blue-700 mb-4">📋 Digital Indicators Table</h2>
+      <h2 class="text-xl font-bold text-blue-700 mb-4">📋 Indicator Heatmap Table</h2>
       <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="min-w-full divide-y divide-gray-200" id="dataTable">
+        <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-800">
           <thead class="bg-blue-100">
             <tr>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">Country</th>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">Year</th>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">Internet Usage (%)</th>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">4G Coverage (%)</th>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">Broadband / 100</th>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">Cyber Sec Index</th>
-              <th class="px-4 py-2 text-xs font-bold text-left text-gray-700">E-Gov Index</th>
+              <th class="px-4 py-2 text-left">Country</th>
+              <th class="px-4 py-2 text-left">Internet Usage</th>
+              <th class="px-4 py-2 text-left">4G Coverage</th>
+              <th class="px-4 py-2 text-left">Broadband</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 text-sm text-gray-700" id="tableBody">
-            <!-- Filled by JS -->
+          <tbody id="heatmapBody" class="divide-y divide-gray-100">
+            <!-- Populated by JS -->
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- Script -->
   <script>
     feather.replace();
-
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
     let fullData = [];
 
@@ -137,118 +115,97 @@
     const downloadBtn = document.getElementById('downloadBtn');
 
     function cleanAverage(data, key) {
-      const vals = data
-        .map(row => row[key])
-        .filter(val => val !== undefined && val !== null && val !== "" && !isNaN(+val))
-        .map(val => +val);
+      const vals = data.map(row => row[key]).filter(v => v !== "" && !isNaN(v)).map(Number);
       return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+    }
+
+    function getColor(value, min, max) {
+      if (value === null || value === "" || isNaN(value)) return "#f87171"; // red for missing
+      const percent = (value - min) / (max - min);
+      const shade = Math.round(255 - percent * 155);
+      return `rgb(${shade}, ${shade}, 255)`;
     }
 
     function updateCards(data) {
       document.getElementById('avgInternet').textContent = cleanAverage(data, "Proportion of individuals using the Internet").toFixed(1) + "%";
       document.getElementById('avgBroadband').textContent = cleanAverage(data, "Fixed Internet broadband subscriptions per 100 inhabitants").toFixed(1);
       document.getElementById('avg4G').textContent = cleanAverage(data, "Proportion of population covered by at least a 4G mobile").toFixed(1) + "%";
-
-      const countCyber = data.filter(d => d["National Cyber Security Index"] !== undefined && d["National Cyber Security Index"] !== "").length;
-      const countEGov = data.filter(d => d[" E-Goverment Index"] !== undefined && d[" E-Goverment Index"] !== "").length;
-
-      document.getElementById('countCyberIndex').textContent = countCyber;
-      document.getElementById('countEGovIndex').textContent = countEGov;
+      document.getElementById('countCyberIndex').textContent = data.filter(d => d["National Cyber Security Index"]).length;
+      document.getElementById('countEGovIndex').textContent = data.filter(d => d[" E-Goverment Index"]).length;
     }
 
     function drawChart(canvasId, label, key, data) {
       const ctx = document.getElementById(canvasId).getContext('2d');
       const labels = data.map(row => row["Country"]);
-      const values = data.map(row => {
-        const val = row[key];
-        return val !== undefined && val !== "" && !isNaN(+val) ? +val : 0;
-      });
-
+      const values = data.map(row => parseFloat(row[key]) || 0);
       return new Chart(ctx, {
         type: 'bar',
         data: {
           labels,
-          datasets: [{
-            label,
-            data: values,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
+          datasets: [{ label, data: values, backgroundColor: 'rgba(54,162,235,0.6)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1 }]
         },
         options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: label }
-            },
-            x: {
-              ticks: { autoSkip: false }
-            }
-          }
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
         }
       });
     }
 
-    function updateTable(data) {
-      const tbody = document.getElementById("tableBody");
+    function renderHeatmapTable(data) {
+      const tbody = document.getElementById("heatmapBody");
       tbody.innerHTML = "";
-
+      const getVals = key => data.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
+      const ranges = {
+        internet: [Math.min(...getVals("Proportion of individuals using the Internet")), Math.max(...getVals("Proportion of individuals using the Internet"))],
+        coverage: [Math.min(...getVals("Proportion of population covered by at least a 4G mobile")), Math.max(...getVals("Proportion of population covered by at least a 4G mobile"))],
+        broadband: [Math.min(...getVals("Fixed Internet broadband subscriptions per 100 inhabitants")), Math.max(...getVals("Fixed Internet broadband subscriptions per 100 inhabitants"))],
+      };
       data.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="px-4 py-2">${row["Country"] || ""}</td>
-          <td class="px-4 py-2">${row["Year"] || ""}</td>
-          <td class="px-4 py-2">${row["Proportion of individuals using the Internet"] || ""}</td>
-          <td class="px-4 py-2">${row["Proportion of population covered by at least a 4G mobile"] || ""}</td>
-          <td class="px-4 py-2">${row["Fixed Internet broadband subscriptions per 100 inhabitants"] || ""}</td>
-          <td class="px-4 py-2">${row["National Cyber Security Index"] || ""}</td>
-          <td class="px-4 py-2">${row[" E-Goverment Index"] || ""}</td>
-        `;
-        tbody.appendChild(tr);
+        const internet = parseFloat(row["Proportion of individuals using the Internet"]);
+        const coverage = parseFloat(row["Proportion of population covered by at least a 4G mobile"]);
+        const broadband = parseFloat(row["Fixed Internet broadband subscriptions per 100 inhabitants"]);
+        tbody.innerHTML += `
+          <tr>
+            <td class="px-4 py-2 font-medium hover:underline cursor-pointer" onclick="drillThrough('${row['Country']}')">${row["Country"]}</td>
+            <td class="px-4 py-2" style="background-color:${getColor(internet, ...ranges.internet)}">${isNaN(internet) ? "N/A" : internet}</td>
+            <td class="px-4 py-2" style="background-color:${getColor(coverage, ...ranges.coverage)}">${isNaN(coverage) ? "N/A" : coverage}</td>
+            <td class="px-4 py-2" style="background-color:${getColor(broadband, ...ranges.broadband)}">${isNaN(broadband) ? "N/A" : broadband}</td>
+          </tr>`;
       });
     }
 
     let internetChart, broadbandChart, coverageChart;
 
     function filterAndUpdate() {
-      const selectedRegion = regionFilter.value;
-      const filtered = selectedRegion === "All" ? fullData : fullData.filter(d => d["CULTURAL REGION"] === selectedRegion);
-
+      const region = regionFilter.value;
+      const filtered = region === "All" ? fullData : fullData.filter(d => d["CULTURAL REGION"] === region);
       updateCards(filtered);
-
-      internetChart?.destroy();
-      broadbandChart?.destroy();
-      coverageChart?.destroy();
-
-      internetChart = drawChart("internetChart", "% Internet Usage", "Proportion of individuals using the Internet", filtered);
-      broadbandChart = drawChart("broadbandChart", "Broadband Subs per 100", "Fixed Internet broadband subscriptions per 100 inhabitants", filtered);
-      coverageChart = drawChart("coverageChart", "% Covered by 4G", "Proportion of population covered by at least a 4G mobile", filtered);
-
-      updateTable(filtered);
+      internetChart?.destroy(); broadbandChart?.destroy(); coverageChart?.destroy();
+      internetChart = drawChart("internetChart", "Internet Usage", "Proportion of individuals using the Internet", filtered);
+      broadbandChart = drawChart("broadbandChart", "Broadband Subscriptions", "Fixed Internet broadband subscriptions per 100 inhabitants", filtered);
+      coverageChart = drawChart("coverageChart", "4G Coverage", "Proportion of population covered by at least a 4G mobile", filtered);
+      renderHeatmapTable(filtered);
     }
 
-    fetch(excelURL)
-      .then(res => res.arrayBuffer())
-      .then(ab => {
-        const workbook = XLSX.read(ab, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        fullData = XLSX.utils.sheet_to_json(sheet);
-        filterAndUpdate();
-      });
+    fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      fullData = XLSX.utils.sheet_to_json(sheet);
+      filterAndUpdate();
+    });
 
     regionFilter.addEventListener('change', filterAndUpdate);
-
     downloadBtn.addEventListener('click', () => {
-      const worksheet = XLSX.utils.json_to_sheet(fullData);
+      const ws = XLSX.utils.json_to_sheet(fullData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, worksheet, "Filtered Data");
+      XLSX.utils.book_append_sheet(wb, ws, "Filtered Data");
       XLSX.writeFile(wb, "Pacific-Digital-Indicators.xlsx");
     });
+
+    function drillThrough(country) {
+      alert(`Drill-through: You clicked ${country}`);
+      // You can navigate to another page here: e.g., window.location.href = `detail.html?country=${country}`;
+    }
   </script>
 </body>
 </html>
