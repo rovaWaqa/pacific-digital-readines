@@ -157,17 +157,17 @@
       });
     }
 
-    function drawUsageCoverageChart(data) {
-  // Sort data by Internet Usage descending
-  const sortedData = [...data].sort((a, b) => {
+   function drawUsageCoverageChart(data) {
+  // Sort data by Internet Usage (descending)
+  const sorted = [...data].sort((a, b) => {
     const valA = parseFloat(a["Proportion of individuals using the Internet"]) || 0;
     const valB = parseFloat(b["Proportion of individuals using the Internet"]) || 0;
     return valB - valA;
   });
 
-  const labels = sortedData.map(d => d["Country"]);
-  const internetData = sortedData.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
-  const coverageData = sortedData.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
+  const labels = sorted.map(d => d["Country"]);
+  const internetData = sorted.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
+  const coverageData = sorted.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
 
   const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
   return new Chart(ctx, {
@@ -196,7 +196,7 @@
       scales: {
         x: {
           stacked: false,
-          ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+          ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }
         },
         y: {
           stacked: false,
@@ -208,6 +208,7 @@
     }
   });
 }
+
 
 
     function renderHeatmapTable(data) {
