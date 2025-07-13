@@ -12,20 +12,9 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     html { scroll-behavior: smooth; }
-    .floating-panel {
-      position: fixed;
-      top: 50%;
-      right: 1rem;
-      transform: translateY(-50%);
-      z-index: 50;
-      background-color: white;
-      border: 1px solid #cbd5e0;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
     #internetMap {
-      height: 400px;
+      height: 450px;
+      margin-top: 2rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
@@ -39,156 +28,157 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-16">
-    <!-- Bar Chart -->
-    <div>
+    <!-- Chart -->
+    <section>
       <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
       <canvas id="avgUsageCoverageChart"></canvas>
-    </div>
+    </section>
 
     <!-- Map -->
-    <div class="mt-16">
-      <h2 class="text-xl font-bold text-blue-700 mb-4">🗺️ Internet Usage Map (Average by Country)</h2>
+    <section>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Average by Country)</h2>
       <div id="internetMap"></div>
-    </div>
+    </section>
   </main>
 
   <script>
-    feather.replace();
-    const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
-    let fullData = [];
+    document.addEventListener("DOMContentLoaded", () => {
+      feather.replace();
+      const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+      let fullData = [];
 
-    function drawUsageCoverageChart(data) {
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"];
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
+      function drawUsageCoverageChart(data) {
+        const grouped = {};
+        data.forEach(d => {
+          const country = d["Country"];
+          if (!grouped[country]) grouped[country] = [];
+          grouped[country].push(d);
+        });
 
-      const labels = [];
-      const internetData = [];
-      const coverageData = [];
+        const labels = [];
+        const internetData = [];
+        const coverageData = [];
 
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
+        for (const country in grouped) {
+          const rows = grouped[country];
+          const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+          const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
 
-        labels.push(country);
-        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
+          labels.push(country);
+          internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
+          coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
+        }
+
+        const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
+        return new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Internet Usage (%)",
+                data: internetData,
+                backgroundColor: "rgba(59, 130, 246, 0.6)"
+              },
+              {
+                label: "4G Coverage (%)",
+                data: coverageData,
+                backgroundColor: "rgba(16, 185, 129, 0.6)"
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: { display: true, text: "Percentage" }
+              },
+              x: { stacked: false }
+            }
+          }
+        });
       }
 
-      const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
-      return new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Internet Usage (%)",
-              data: internetData,
-              backgroundColor: "rgba(59, 130, 246, 0.6)"
-            },
-            {
-              label: "4G Coverage (%)",
-              data: coverageData,
-              backgroundColor: "rgba(16, 185, 129, 0.6)"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: { display: true, text: "Percentage" }
-            },
-            x: { stacked: false }
+      function drawInternetMap(data) {
+        if (window.internetMap) window.internetMap.remove();
+
+        const countryAvgs = {};
+        const grouped = {};
+        data.forEach(d => {
+          const country = d["Country"];
+          if (!grouped[country]) grouped[country] = [];
+          grouped[country].push(d);
+        });
+
+        for (const country in grouped) {
+          const rows = grouped[country];
+          const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+          if (vals.length) {
+            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+            countryAvgs[country] = avg;
           }
         }
-      });
-    }
 
-    function drawInternetMap(data) {
-      if (window.internetMap) window.internetMap.remove();
+        window.internetMap = L.map('internetMap').setView([-10, 175], 3);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(window.internetMap);
 
-      const countryAvgs = {};
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"];
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
+        fetch('./countries.geojson')
+          .then(res => res.json())
+          .then(geojson => {
+            const getColor = d => {
+              return d > 90 ? '#1a9850' :
+                     d > 70 ? '#66bd63' :
+                     d > 50 ? '#a6d96a' :
+                     d > 30 ? '#d9ef8b' :
+                     d > 10 ? '#fee08b' :
+                     d > 0  ? '#fdae61' :
+                              '#f46d43';
+            };
 
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        if (vals.length) {
-          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-          countryAvgs[country] = avg;
-        }
+            L.geoJSON(geojson, {
+              style: feature => {
+                const name = feature.properties.ADMIN;
+                const val = countryAvgs[name];
+                return {
+                  fillColor: getColor(val),
+                  weight: 1,
+                  opacity: 1,
+                  color: 'white',
+                  fillOpacity: 0.7
+                };
+              },
+              onEachFeature: (feature, layer) => {
+                const name = feature.properties.ADMIN;
+                const val = countryAvgs[name];
+                if (val !== undefined) {
+                  layer.bindTooltip(`${name}: ${val.toFixed(1)}%`);
+                } else {
+                  layer.bindTooltip(`${name}: N/A`);
+                }
+              }
+            }).addTo(window.internetMap);
+          });
       }
 
-      window.internetMap = L.map('internetMap').setView([-10, 175], 3); // Center on Pacific
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(window.internetMap);
+      function filterAndUpdate() {
+        drawUsageCoverageChart(fullData);
+        drawInternetMap(fullData);
+      }
 
-      // 👉 Load GeoJSON from same directory
-      fetch('./countries.geojson')
-        .then(res => res.json())
-        .then(geojson => {
-          const getColor = d => {
-            return d > 90 ? '#1a9850' :
-                   d > 70 ? '#66bd63' :
-                   d > 50 ? '#a6d96a' :
-                   d > 30 ? '#d9ef8b' :
-                   d > 10 ? '#fee08b' :
-                   d > 0  ? '#fdae61' :
-                            '#f46d43';
-          };
-
-          L.geoJSON(geojson, {
-            style: feature => {
-              const name = feature.properties.ADMIN;
-              const val = countryAvgs[name];
-              return {
-                fillColor: getColor(val),
-                weight: 1,
-                opacity: 1,
-                color: 'white',
-                fillOpacity: 0.7
-              };
-            },
-            onEachFeature: (feature, layer) => {
-              const name = feature.properties.ADMIN;
-              const val = countryAvgs[name];
-              if (val !== undefined) {
-                layer.bindTooltip(`${name}: ${val.toFixed(1)}%`);
-              } else {
-                layer.bindTooltip(`${name}: N/A`);
-              }
-            }
-          }).addTo(window.internetMap);
-        });
-    }
-
-    function filterAndUpdate() {
-      drawUsageCoverageChart(fullData);
-      drawInternetMap(fullData);
-    }
-
-    fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      fullData = XLSX.utils.sheet_to_json(sheet);
-      filterAndUpdate();
+      fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        fullData = XLSX.utils.sheet_to_json(sheet);
+        filterAndUpdate();
+      });
     });
   </script>
 </body>
