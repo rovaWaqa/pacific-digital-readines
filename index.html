@@ -158,11 +158,18 @@
     }
 
     function drawUsageCoverageChart(data) {
-  const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
-  const labels = data.map(d => d["Country"]);
-  const internetData = data.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
-  const coverageData = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
+  // Sort data by Internet Usage descending
+  const sortedData = [...data].sort((a, b) => {
+    const valA = parseFloat(a["Proportion of individuals using the Internet"]) || 0;
+    const valB = parseFloat(b["Proportion of individuals using the Internet"]) || 0;
+    return valB - valA;
+  });
 
+  const labels = sortedData.map(d => d["Country"]);
+  const internetData = sortedData.map(d => parseFloat(d["Proportion of individuals using the Internet"]) || 0);
+  const coverageData = sortedData.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"]) || 0);
+
+  const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
   return new Chart(ctx, {
     type: 'bar',
     data: {
@@ -187,17 +194,21 @@
         tooltip: { mode: 'index', intersect: false }
       },
       scales: {
-        x: { stacked: true },
+        x: {
+          stacked: false,
+          ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+        },
         y: {
-          stacked: true,
+          stacked: false,
           beginAtZero: true,
-          max: 200,
-          title: { display: true, text: "Total Percentage" }
+          max: 100,
+          title: { display: true, text: "Percentage (%)" }
         }
       }
     }
   });
 }
+
 
     function renderHeatmapTable(data) {
       const tbody = document.getElementById("heatmapBody");
