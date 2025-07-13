@@ -63,12 +63,12 @@
   <!-- Main Content -->
   <main class="max-w-6xl mx-auto px-4 py-16">
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+    <div class="grid grid-cols-1 sm:grid-cols-5 gap-6 mb-10">
       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
         <h3 class="text-sm text-gray-600 mb-2">Avg. Internet Usage</h3>
         <p id="avgInternet" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
-       <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
+      <div class="bg-blue-100 rounded-lg shadow p-6 text-center">
         <h3 class="text-sm text-gray-600 mb-2">Avg. 4G Coverage</h3>
         <p id="avg4G" class="text-3xl font-bold text-blue-700">--%</p>
       </div>
@@ -76,7 +76,14 @@
         <h3 class="text-sm text-gray-600 mb-2">Avg. Broadband Subscriptions</h3>
         <p id="avgBroadband" class="text-3xl font-bold text-blue-700">--</p>
       </div>
-     
+      <div class="bg-green-100 rounded-lg shadow p-6 text-center">
+        <h3 class="text-sm text-gray-600 mb-2">Cyber Security Index Count</h3>
+        <p id="countCyberIndex" class="text-3xl font-bold text-green-700">--</p>
+      </div>
+      <div class="bg-green-100 rounded-lg shadow p-6 text-center">
+        <h3 class="text-sm text-gray-600 mb-2">E-Government Index Count</h3>
+        <p id="countEGovIndex" class="text-3xl font-bold text-green-700">--</p>
+      </div>
     </div>
 
     <!-- Charts -->
@@ -118,6 +125,12 @@
       document.getElementById('avgInternet').textContent = cleanAverage(data, "Proportion of individuals using the Internet").toFixed(1) + "%";
       document.getElementById('avgBroadband').textContent = cleanAverage(data, "Fixed Internet broadband subscriptions per 100 inhabitants").toFixed(1);
       document.getElementById('avg4G').textContent = cleanAverage(data, "Proportion of population covered by at least a 4G mobile").toFixed(1) + "%";
+
+      const countCyber = data.filter(d => d["National Cyber Security Index"] !== undefined && d["National Cyber Security Index"] !== "").length;
+      const countEGov = data.filter(d => d[" E-Goverment Index"] !== undefined && d[" E-Goverment Index"] !== "").length;
+
+      document.getElementById('countCyberIndex').textContent = countCyber;
+      document.getElementById('countEGovIndex').textContent = countEGov;
     }
 
     function drawChart(canvasId, label, key, data) {
