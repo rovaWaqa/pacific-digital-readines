@@ -154,9 +154,15 @@
         });
 
         // Use Pacific-centered basemap from Esri
-        L.tileLayer('https://tiles.arcgis.com/tiles/YpWVqIbOT80sKVHP/arcgis/rest/services/World_Executive_Pacific_Centered/MapServer/tile/{z}/{y}/{x}', {
-          attribution: '© National Geographic / Esri',
-          maxZoom: 12
+      //  L.tileLayer('https://tiles.arcgis.com/tiles/YpWVqIbOT80sKVHP/arcgis/rest/services/World_Executive_Pacific_Centered/MapServer/tile/{z}/{y}/{x}', {
+       //   attribution: '© National Geographic / Esri',
+        //  maxZoom: 12
+      //  }).addTo(map);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18,
+          noWrap: true // Prevent tiles from wrapping across 180° longitude
         }).addTo(map);
 
         const normalizedCoords = {};
