@@ -43,13 +43,26 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
-      const geojsonURL = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
 
-      const countryNameMap = {
-        "Micronesia": "Micronesia (Federated States of)",
-        "USA": "United States of America",
-        // Add more mappings if needed
+      const countryCoords = {
+        "Fiji": [-17.7134, 178.0650],
+        "New Caledonia": [-20.9043, 165.6180],
+        "Papua New Guinea": [-6.314993, 143.9555],
+        "Solomon Islands": [-9.6457, 160.1562],
+        "Vanuatu": [-15.3767, 166.9592],
+        "Kiribati": [1.8709, -157.3630],
+        "Marshall Islands": [7.1315, 171.1845]
       };
+
+      function getColor(d) {
+        return d > 90 ? '#1a9850' :
+               d > 70 ? '#66bd63' :
+               d > 50 ? '#a6d96a' :
+               d > 30 ? '#d9ef8b' :
+               d > 10 ? '#fee08b' :
+               d > 0  ? '#fdae61' :
+                        '#f46d43';
+      }
 
       function drawChart(data) {
         const grouped = {};
@@ -125,97 +138,27 @@
           }
         }
 
-        // Initialize map centered on Pacific
         const map = L.map('internetMap').setView([-18, 180], 3.5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        fetch(geojsonURL)
-          .then(res => res.json())
-          .then(geojson => {
-            const getColor = d => {
-              return d > 90 ? '#1a9850' :
-                     d > 70 ? '#66bd63' :
-                     d > 50 ? '#a6d96a' :
-                     d > 30 ? '#d9ef8b' :
-                     d > 10 ? '#fee08b' :
-                     d > 0  ? '#fdae61' :
-                              '#f46d43';
-            };
+        Object.entries(countryAvgs).forEach(([country, avg]) => {
+          const coords = countryCoords[country];
+          if (coords && avg !== undefined) {
+            const radius = Math.max(5, Math.sqrt(avg) * 1.5); // scaled by usage
 
-            // Draw country polygons
-            L.geoJSON(geojson, {
-              style: feature => {
-                const name = feature.properties.ADMIN;
-                const matchedName = countryNameMap[name] || name;
-                const val = countryAvgs[matchedName];
-                return {
-                  fillColor: val !== undefined ? getColor(val) : '#cccccc', // grey countries not in data
-                  weight: 1,
-                  opacity: 1,
-                  color: 'white',
-                  fillOpacity: val !== undefined ? 0.7 : 0.3
-                };
-              },
-              onEachFeature: (feature, layer) => {
-                const name = feature.properties.ADMIN;
-                const matchedName = countryNameMap[name] || name;
-                const val = countryAvgs[matchedName];
-                if(val !== undefined){
-                  layer.bindTooltip(`${name}: ${val.toFixed(1)}%`);
-                } else {
-                  layer.bindTooltip(`${name}: No Data`);
-                }
-              }
-            }).addTo(map);
-
-            // Add circle markers for countries in dataset
-            geojson.features.forEach(feature => {
-              const name = feature.properties.ADMIN;
-              const matchedName = countryNameMap[name] || name;
-              const avg = countryAvgs[matchedName];
-              if (avg !== undefined) {
-                // Calculate centroid of polygon coords
-                let latlng;
-                const geom = feature.geometry;
-                if(geom.type === "Polygon") {
-                  latlng = getCentroid(geom.coordinates[0]);
-                } else if (geom.type === "MultiPolygon") {
-                  latlng = getCentroid(geom.coordinates[0][0]);
-                }
-                if(latlng){
-                  L.circleMarker([latlng[1], latlng[0]], {
-                    radius: 8,
-                    fillColor: getColor(avg),
-                    color: "#000",
-                    weight: 1,
-                    opacity: 1,
-                    fillOpacity: 0.9
-                  }).addTo(map).bindPopup(`${matchedName}<br>Internet Usage: ${avg.toFixed(1)}%`);
-                }
-              }
-            });
-
-            // Helper: approximate centroid for polygon coordinates [lng, lat]
-            function getCentroid(coords) {
-              let area = 0, x = 0, y = 0;
-              const points = coords;
-              const len = points.length;
-              for(let i = 0; i < len - 1; i++){
-                const xi = points[i][0], yi = points[i][1];
-                const xi1 = points[i+1][0], yi1 = points[i+1][1];
-                const a = xi * yi1 - xi1 * yi;
-                area += a;
-                x += (xi + xi1) * a;
-                y += (yi + yi1) * a;
-              }
-              area = area / 2;
-              x = x / (6 * area);
-              y = y / (6 * area);
-              return [x, y]; // [lng, lat]
-            }
-          });
+            L.circleMarker(coords, {
+              radius,
+              fillColor: getColor(avg),
+              color: "#000",
+              weight: 1,
+              opacity: 1,
+              fillOpacity: 0.9
+            }).addTo(map)
+              .bindPopup(`<strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%`);
+          }
+        });
       }
 
       fetch(excelURL)
