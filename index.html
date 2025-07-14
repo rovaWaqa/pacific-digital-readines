@@ -148,8 +148,6 @@
         }
 
         const map = L.map('internetMap', {
-          center: [-15, -160],
-          zoom: 4,
           worldCopyJump: true
         });
 
@@ -162,11 +160,13 @@
           normalizedCoords[k.trim().toLowerCase()] = countryCoords[k];
         });
 
+        const bounds = [];
+
         Object.entries(countryAvgs).forEach(([country, avg]) => {
           const coords = normalizedCoords[country.trim().toLowerCase()];
           if (coords && avg !== undefined) {
             const radius = Math.max(5, Math.sqrt(avg) * 1.5);
-            L.circleMarker(coords, {
+            const marker = L.circleMarker(coords, {
               radius,
               fillColor: getColor(avg),
               color: "#333",
@@ -175,10 +175,16 @@
               fillOpacity: 0.9
             }).addTo(map)
               .bindPopup(`<strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%`);
+
+            bounds.push(coords);
           } else {
             console.warn(`Missing coords for: "${country}"`);
           }
         });
+
+        if (bounds.length) {
+          map.fitBounds(bounds, { padding: [20, 20] });
+        }
       }
 
       fetch(excelURL)
