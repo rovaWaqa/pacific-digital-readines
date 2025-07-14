@@ -162,8 +162,7 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 18,
-          noWrap: true // Prevent tiles from wrapping across 180° longitude
-        }).addTo(map);
+          }).addTo(map);
 
         const normalizedCoords = {};
         Object.keys(countryCoords).forEach(k => {
