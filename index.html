@@ -160,10 +160,16 @@
         //  maxZoom: 12
       //  }).addTo(map);
 
+        //L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
+ // attribution: '© National Geographic / Esri',
+//  maxZoom: 12
+//}).addTo(map);
+
         L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© National Geographic / Esri',
-  maxZoom: 12
-}).addTo(map);
+        attribution: 'Tiles © Esri — Source: GEBCO, NOAA, National Geographic, DeLorme, and others',
+        maxZoom: 13
+        }).addTo(map);
+
 
       //  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
          // attribution: '© OpenStreetMap contributors',
