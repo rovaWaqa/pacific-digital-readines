@@ -150,7 +150,8 @@
         const map = L.map('internetMap', {
           center: [0, 180],
           zoom: 2.5,
-          worldCopyJump: false
+          worldCopyJump: false,
+          maxBoundsViscosity: 1.0
         });
 
         // Use Pacific-centered basemap from Esri
@@ -159,10 +160,15 @@
         //  maxZoom: 12
       //  }).addTo(map);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
-          maxZoom: 18,
-          }).addTo(map);
+        L.tileLayer('https://tiles.arcgis.com/tiles/YpWVqIbOT80sKVHP/arcgis/rest/services/World_Executive_Pacific_Centered/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '© National Geographic / Esri',
+  maxZoom: 12
+}).addTo(map);
+
+      //  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+         // attribution: '© OpenStreetMap contributors',
+         // maxZoom: 18,
+         // }).addTo(map);
 
         const normalizedCoords = {};
         Object.keys(countryCoords).forEach(k => {
