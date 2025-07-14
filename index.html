@@ -35,7 +35,7 @@
 
     <!-- Map -->
     <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Average by Country)</h2>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Pacific Centered)</h2>
       <div id="internetMap"></div>
     </section>
   </main>
@@ -147,16 +147,16 @@
           }
         }
 
-        
-
         const map = L.map('internetMap', {
-              center: [0, 180],         // center at 180° (Pacific view)
-              zoom: 3.5,
-              worldCopyJump: true       // wrap the map to show neighbors together
-          });
+          center: [0, 180],
+          zoom: 2.5,
+          worldCopyJump: true
+        });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
+        // Use Pacific-centered basemap from Esri
+        L.tileLayer('https://tiles.arcgis.com/tiles/YpWVqIbOT80sKVHP/arcgis/rest/services/World_Executive_Pacific_Centered/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '© National Geographic / Esri',
+          maxZoom: 12
         }).addTo(map);
 
         const normalizedCoords = {};
