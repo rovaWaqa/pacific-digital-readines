@@ -166,7 +166,7 @@
       for (const [country, avg] of Object.entries(countryAvgs)) {
         const coords = countryCoords[country];
         if (coords) {
-          new google.maps.Circle({
+          const circle = new google.maps.Circle({
             strokeColor: "#000",
             strokeOpacity: 0.9,
             strokeWeight: 1.5,
@@ -174,8 +174,23 @@
             fillOpacity: 0.75,
             map,
             center: { lat: coords[0], lng: coords[1] },
-            radius: Math.max(80000, avg * 3000),
-            title: `${country}: ${avg.toFixed(1)}%`
+            radius: Math.max(80000, avg * 3000)
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div class="text-sm font-medium">
+                        <strong>${country}</strong><br>
+                        Internet Usage: ${avg.toFixed(1)}%
+                      </div>`
+          });
+
+          circle.addListener('mouseover', () => {
+            infoWindow.setPosition(circle.getCenter());
+            infoWindow.open(map);
+          });
+
+          circle.addListener('mouseout', () => {
+            infoWindow.close();
           });
         } else {
           console.warn("Missing coordinates for:", country);
@@ -183,20 +198,16 @@
       }
     }
 
-    // GLOBAL variable to store data
     let fullData = [];
 
-    // Called by Google Maps API once it loads
     function initMap() {
       if (fullData.length > 0) {
         drawMap(fullData);
       } else {
-        console.warn("Map tried to load before data was ready. Retrying...");
         setTimeout(initMap, 500);
       }
     }
 
-    // Load Excel
     fetch(excelURL)
       .then(r => r.arrayBuffer())
       .then(data => {
@@ -205,7 +216,7 @@
         fullData = XLSX.utils.sheet_to_json(sheet);
 
         drawChart(fullData);
-        // Do not call initMap here — Google Maps will call it when ready
+        // initMap will be called by Google Maps API
       })
       .catch(error => {
         console.error("Failed to load Excel file:", error);
