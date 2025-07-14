@@ -147,9 +147,13 @@
           }
         }
 
+        
+
         const map = L.map('internetMap', {
-          worldCopyJump: true
-        });
+              center: [0, 180],         // center at 180° (Pacific view)
+              zoom: 3.5,
+              worldCopyJump: true       // wrap the map to show neighbors together
+          });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
