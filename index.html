@@ -144,7 +144,6 @@
         }
       }
 
-      // Custom light gray map style
       const styledMapType = new google.maps.StyledMapType([
         {
           featureType: "all",
@@ -184,16 +183,29 @@
       }
     }
 
-    // Load Excel and initialize
+    // GLOBAL variable to store data
+    let fullData = [];
+
+    // Called by Google Maps API once it loads
+    function initMap() {
+      if (fullData.length > 0) {
+        drawMap(fullData);
+      } else {
+        console.warn("Map tried to load before data was ready. Retrying...");
+        setTimeout(initMap, 500);
+      }
+    }
+
+    // Load Excel
     fetch(excelURL)
       .then(r => r.arrayBuffer())
       .then(data => {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const fullData = XLSX.utils.sheet_to_json(sheet);
+        fullData = XLSX.utils.sheet_to_json(sheet);
 
         drawChart(fullData);
-        window.initMap = () => drawMap(fullData);
+        // Do not call initMap here — Google Maps will call it when ready
       })
       .catch(error => {
         console.error("Failed to load Excel file:", error);
@@ -201,8 +213,8 @@
       });
   </script>
 
-  <!-- Google Maps JS API -->
-  <script async defer
+  <!-- Google Maps API -->
+  <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap">
   </script>
 </body>
