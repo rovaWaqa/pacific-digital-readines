@@ -61,13 +61,13 @@
     };
 
     function getColor(d) {
-      return d > 90 ? '#1a9850' :
-             d > 70 ? '#66bd63' :
-             d > 50 ? '#a6d96a' :
-             d > 30 ? '#d9ef8b' :
-             d > 10 ? '#fee08b' :
-             d > 0  ? '#fdae61' :
-                      '#f46d43';
+      return d > 90 ? '#FF5733' :
+             d > 70 ? '#FF8C00' :
+             d > 50 ? '#FFD700' :
+             d > 30 ? '#1E90FF' :
+             d > 10 ? '#00CED1' :
+             d > 0  ? '#BA55D3' :
+                      '#DC143C';
     }
 
     function drawChart(data) {
@@ -144,21 +144,35 @@
         }
       }
 
+      // Custom light gray map style
+      const styledMapType = new google.maps.StyledMapType([
+        {
+          featureType: "all",
+          elementType: "all",
+          stylers: [{ saturation: -100 }, { lightness: 40 }]
+        }
+      ], { name: "Light Grey" });
+
       const map = new google.maps.Map(document.getElementById("internetMap"), {
         zoom: 3,
         center: { lat: 0, lng: 180 },
-        mapTypeId: "terrain"
+        mapTypeControlOptions: {
+          mapTypeIds: ["styled_map", "roadmap"]
+        }
       });
+
+      map.mapTypes.set("styled_map", styledMapType);
+      map.setMapTypeId("styled_map");
 
       for (const [country, avg] of Object.entries(countryAvgs)) {
         const coords = countryCoords[country];
         if (coords) {
           new google.maps.Circle({
-            strokeColor: "#333",
-            strokeOpacity: 0.8,
-            strokeWeight: 1,
+            strokeColor: "#000",
+            strokeOpacity: 0.9,
+            strokeWeight: 1.5,
             fillColor: getColor(avg),
-            fillOpacity: 0.6,
+            fillOpacity: 0.75,
             map,
             center: { lat: coords[0], lng: coords[1] },
             radius: Math.max(80000, avg * 3000),
@@ -170,7 +184,7 @@
       }
     }
 
-    // Load Excel and initialize everything
+    // Load Excel and initialize
     fetch(excelURL)
       .then(r => r.arrayBuffer())
       .then(data => {
@@ -179,7 +193,7 @@
         const fullData = XLSX.utils.sheet_to_json(sheet);
 
         drawChart(fullData);
-        window.initMap = () => drawMap(fullData); // wait for Google Maps to load
+        window.initMap = () => drawMap(fullData);
       })
       .catch(error => {
         console.error("Failed to load Excel file:", error);
@@ -187,10 +201,9 @@
       });
   </script>
 
-  <!-- Load Google Maps API -->
+  <!-- Google Maps JS API -->
   <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap">
   </script>
-
 </body>
 </html>
