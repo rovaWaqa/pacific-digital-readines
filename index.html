@@ -5,10 +5,8 @@
   <title>Pacific Islands Digital Pulse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     html { scroll-behavior: smooth; }
     #internetMap {
@@ -35,194 +33,164 @@
 
     <!-- Map -->
     <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Pacific Centered)</h2>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Google Maps)</h2>
       <div id="internetMap"></div>
     </section>
   </main>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+    const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
 
-      const countryCoords = {
-        "Fiji": [-17.7134, 178.0650],
-        "New Caledonia": [-20.9043, 165.6180],
-        "Solomon Islands": [-9.6457, 160.1562],
-        "Samoa": [-13.7590, -172.1046],
-        "Tonga": [-21.178986, -175.198242],
-        "Vanuatu": [-15.3767, 166.9592],
-        "Kiribati": [1.8709, -157.3626],
-        "Marshall Islands": [7.1315, 171.1845],
-        "Micronesia (Federated States of)": [6.8875, 158.2151],
-        "Nauru": [-0.5228, 166.9315],
-        "Palau": [7.51498, 134.58252],
-        "Cook Islands": [-21.2367, -159.7777],
-        "French Polynesia": [-17.6797, -149.4068],
-        "Niue": [-19.0544, -169.8672],
-        "Papua New Guinea": [-6.314993, 143.9555],
-        "Tuvalu": [-7.1095, 177.6493]
-      };
+    const countryCoords = {
+      "Fiji": [-17.7134, 178.0650],
+      "New Caledonia": [-20.9043, 165.6180],
+      "Solomon Islands": [-9.6457, 160.1562],
+      "Samoa": [-13.7590, -172.1046],
+      "Tonga": [-21.178986, -175.198242],
+      "Vanuatu": [-15.3767, 166.9592],
+      "Kiribati": [1.8709, -157.3626],
+      "Marshall Islands": [7.1315, 171.1845],
+      "Micronesia (Federated States of)": [6.8875, 158.2151],
+      "Nauru": [-0.5228, 166.9315],
+      "Palau": [7.51498, 134.58252],
+      "Cook Islands": [-21.2367, -159.7777],
+      "French Polynesia": [-17.6797, -149.4068],
+      "Niue": [-19.0544, -169.8672],
+      "Papua New Guinea": [-6.314993, 143.9555],
+      "Tuvalu": [-7.1095, 177.6493]
+    };
 
-      function getColor(d) {
-        return d > 90 ? '#1a9850' :
-               d > 70 ? '#66bd63' :
-               d > 50 ? '#a6d96a' :
-               d > 30 ? '#d9ef8b' :
-               d > 10 ? '#fee08b' :
-               d > 0  ? '#fdae61' :
-                        '#f46d43';
+    function getColor(d) {
+      return d > 90 ? '#1a9850' :
+             d > 70 ? '#66bd63' :
+             d > 50 ? '#a6d96a' :
+             d > 30 ? '#d9ef8b' :
+             d > 10 ? '#fee08b' :
+             d > 0  ? '#fdae61' :
+                      '#f46d43';
+    }
+
+    function drawChart(data) {
+      const grouped = {};
+      data.forEach(d => {
+        const country = d["Country"].trim();
+        if (!grouped[country]) grouped[country] = [];
+        grouped[country].push(d);
+      });
+
+      const labels = [];
+      const internetData = [];
+      const coverageData = [];
+
+      for (const country in grouped) {
+        const rows = grouped[country];
+        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
+
+        labels.push(country);
+        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
+        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
       }
 
-      function drawChart(data) {
-        const grouped = {};
-        data.forEach(d => {
-          const country = d["Country"].trim();
-          if (!grouped[country]) grouped[country] = [];
-          grouped[country].push(d);
-        });
-
-        const labels = [];
-        const internetData = [];
-        const coverageData = [];
-
-        for (const country in grouped) {
-          const rows = grouped[country];
-          const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-          const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-
-          labels.push(country);
-          internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-          coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
-        }
-
-        new Chart(document.getElementById("avgUsageCoverageChart").getContext("2d"), {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: "Internet Usage (%)",
-                data: internetData,
-                backgroundColor: "rgba(59, 130, 246, 0.6)"
-              },
-              {
-                label: "4G Coverage (%)",
-                data: coverageData,
-                backgroundColor: "rgba(16, 185, 129, 0.6)"
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-              tooltip: { mode: 'index', intersect: false }
+      new Chart(document.getElementById("avgUsageCoverageChart").getContext("2d"), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Internet Usage (%)",
+              data: internetData,
+              backgroundColor: "rgba(59, 130, 246, 0.6)"
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                title: { display: true, text: "Percentage" }
-              }
+            {
+              label: "4G Coverage (%)",
+              data: coverageData,
+              backgroundColor: "rgba(16, 185, 129, 0.6)"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: { display: true, text: "Percentage" }
             }
           }
-        });
-      }
-
-      function drawMap(data) {
-        const countryAvgs = {};
-        const grouped = {};
-        data.forEach(d => {
-          const country = d["Country"].trim();
-          if (!grouped[country]) grouped[country] = [];
-          grouped[country].push(d);
-        });
-
-        for (const country in grouped) {
-          const rows = grouped[country];
-          const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-          if (vals.length) {
-            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-            countryAvgs[country.trim()] = avg;
-          }
         }
+      });
+    }
 
-        const map = L.map('internetMap', {
-          center: [0, 180],
-          zoom: 2.5,
-          worldCopyJump: false,
-          maxBoundsViscosity: 1.0
-        });
+    function drawMap(data) {
+      const countryAvgs = {};
+      const grouped = {};
+      data.forEach(d => {
+        const country = d["Country"].trim();
+        if (!grouped[country]) grouped[country] = [];
+        grouped[country].push(d);
+      });
 
-        // Use Pacific-centered basemap from Esri
-      //  L.tileLayer('https://tiles.arcgis.com/tiles/YpWVqIbOT80sKVHP/arcgis/rest/services/World_Executive_Pacific_Centered/MapServer/tile/{z}/{y}/{x}', {
-       //   attribution: '© National Geographic / Esri',
-        //  maxZoom: 12
-      //  }).addTo(map);
-
-        //L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
- // attribution: '© National Geographic / Esri',
-//  maxZoom: 12
-//}).addTo(map);
-
-        L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles © Esri — Source: GEBCO, NOAA, National Geographic, DeLorme, and others',
-        maxZoom: 13
-        }).addTo(map);
-
-
-      //  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-         // attribution: '© OpenStreetMap contributors',
-         // maxZoom: 18,
-         // }).addTo(map);
-
-        const normalizedCoords = {};
-        Object.keys(countryCoords).forEach(k => {
-          normalizedCoords[k.trim().toLowerCase()] = countryCoords[k];
-        });
-
-        const bounds = [];
-
-        Object.entries(countryAvgs).forEach(([country, avg]) => {
-          const coords = normalizedCoords[country.trim().toLowerCase()];
-          if (coords && avg !== undefined) {
-            const radius = Math.max(5, Math.sqrt(avg) * 1.5);
-            const marker = L.circleMarker(coords, {
-              radius,
-              fillColor: getColor(avg),
-              color: "#333",
-              weight: 2,
-              opacity: 1,
-              fillOpacity: 0.9
-            }).addTo(map)
-              .bindPopup(`<strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%`);
-
-            bounds.push(coords);
-          } else {
-            console.warn(`Missing coords for: "${country}"`);
-          }
-        });
-
-        if (bounds.length) {
-          map.fitBounds(bounds, { padding: [20, 20] });
+      for (const country in grouped) {
+        const rows = grouped[country];
+        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+        if (vals.length) {
+          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+          countryAvgs[country.trim()] = avg;
         }
       }
 
-      fetch(excelURL)
-        .then(r => r.arrayBuffer())
-        .then(data => {
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const fullData = XLSX.utils.sheet_to_json(sheet);
+      const map = new google.maps.Map(document.getElementById("internetMap"), {
+        zoom: 3,
+        center: { lat: 0, lng: 180 },
+        mapTypeId: "terrain"
+      });
 
-          drawChart(fullData);
-          drawMap(fullData);
-        })
-        .catch(error => {
-          console.error("Failed to load Excel file:", error);
-          alert("Error loading data.");
-        });
-    });
+      for (const [country, avg] of Object.entries(countryAvgs)) {
+        const coords = countryCoords[country];
+        if (coords) {
+          new google.maps.Circle({
+            strokeColor: "#333",
+            strokeOpacity: 0.8,
+            strokeWeight: 1,
+            fillColor: getColor(avg),
+            fillOpacity: 0.6,
+            map,
+            center: { lat: coords[0], lng: coords[1] },
+            radius: Math.max(80000, avg * 3000),
+            title: `${country}: ${avg.toFixed(1)}%`
+          });
+        } else {
+          console.warn("Missing coordinates for:", country);
+        }
+      }
+    }
+
+    // Load Excel and initialize everything
+    fetch(excelURL)
+      .then(r => r.arrayBuffer())
+      .then(data => {
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const fullData = XLSX.utils.sheet_to_json(sheet);
+
+        drawChart(fullData);
+        window.initMap = () => drawMap(fullData); // wait for Google Maps to load
+      })
+      .catch(error => {
+        console.error("Failed to load Excel file:", error);
+        alert("Error loading data.");
+      });
   </script>
+
+  <!-- Load Google Maps API -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap">
+  </script>
+
 </body>
 </html>
