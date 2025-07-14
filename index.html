@@ -45,24 +45,22 @@
       const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
 
       const countryCoords = {
-        
-  "Fiji": [-17.7134, 178.0650],
-  "New Caledonia": [-20.9043, 165.6180],
-  "Solomon Islands": [-9.6457, 160.1562],
-  "Samoa": [-13.7590, -172.1046],
-  "Tonga": [-21.178986, -175.198242],
-  "Vanuatu": [-15.3767, 166.9592],
-  "Kiribati": [1.8709, -157.3626],
-  "Marshall Islands": [7.1315, 171.1845],
-  "Micronesia (Federated States of)": [6.8875, 158.2151],
-  "Nauru": [-0.5228, 166.9315],
-  "Palau": [7.51498, 134.58252],
-  "Cook Islands": [-21.2367, -159.7777],
-  "French Polynesia": [-17.6797, -149.4068],
-  "Niue": [-19.0544, -169.8672],
-  "Papua New Guinea": [-6.314993, 143.9555],
-  "Tuvalu": [-7.1095, 177.6493]
-
+        "Fiji": [-17.7134, 178.0650],
+        "New Caledonia": [-20.9043, 165.6180],
+        "Solomon Islands": [-9.6457, 160.1562],
+        "Samoa": [-13.7590, -172.1046],
+        "Tonga": [-21.178986, -175.198242],
+        "Vanuatu": [-15.3767, 166.9592],
+        "Kiribati": [1.8709, -157.3626],
+        "Marshall Islands": [7.1315, 171.1845],
+        "Micronesia (Federated States of)": [6.8875, 158.2151],
+        "Nauru": [-0.5228, 166.9315],
+        "Palau": [7.51498, 134.58252],
+        "Cook Islands": [-21.2367, -159.7777],
+        "French Polynesia": [-17.6797, -149.4068],
+        "Niue": [-19.0544, -169.8672],
+        "Papua New Guinea": [-6.314993, 143.9555],
+        "Tuvalu": [-7.1095, 177.6493]
       };
 
       function getColor(d) {
@@ -78,7 +76,7 @@
       function drawChart(data) {
         const grouped = {};
         data.forEach(d => {
-          const country = d["Country"];
+          const country = d["Country"].trim();
           if (!grouped[country]) grouped[country] = [];
           grouped[country].push(d);
         });
@@ -135,7 +133,7 @@
         const countryAvgs = {};
         const grouped = {};
         data.forEach(d => {
-          const country = d["Country"];
+          const country = d["Country"].trim();
           if (!grouped[country]) grouped[country] = [];
           grouped[country].push(d);
         });
@@ -145,29 +143,40 @@
           const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
           if (vals.length) {
             const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-            countryAvgs[country] = avg;
+            countryAvgs[country.trim()] = avg;
           }
         }
 
-        const map = L.map('internetMap').setView([-18, 180], 3.5);
+        const map = L.map('internetMap', {
+          center: [-15, -160],
+          zoom: 4,
+          worldCopyJump: true
+        });
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        Object.entries(countryAvgs).forEach(([country, avg]) => {
-          const coords = countryCoords[country];
-          if (coords && avg !== undefined) {
-            const radius = Math.max(5, Math.sqrt(avg) * 1.5); // usage-scaling
+        const normalizedCoords = {};
+        Object.keys(countryCoords).forEach(k => {
+          normalizedCoords[k.trim().toLowerCase()] = countryCoords[k];
+        });
 
+        Object.entries(countryAvgs).forEach(([country, avg]) => {
+          const coords = normalizedCoords[country.trim().toLowerCase()];
+          if (coords && avg !== undefined) {
+            const radius = Math.max(5, Math.sqrt(avg) * 1.5);
             L.circleMarker(coords, {
               radius,
               fillColor: getColor(avg),
-              color: "#000",
-              weight: 1,
+              color: "#333",
+              weight: 2,
               opacity: 1,
               fillOpacity: 0.9
             }).addTo(map)
               .bindPopup(`<strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%`);
+          } else {
+            console.warn(`Missing coords for: "${country}"`);
           }
         });
       }
