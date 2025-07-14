@@ -9,11 +9,17 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     html { scroll-behavior: smooth; }
+
     #internetMap {
       height: 500px;
       margin-top: 2rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* Hide the default close button on Google Maps InfoWindow */
+    .gm-style-iw-c button.gm-ui-hover-effect {
+      display: none !important;
     }
   </style>
 </head>
@@ -59,16 +65,6 @@
       "Papua New Guinea": [-6.314993, 143.9555],
       "Tuvalu": [-7.1095, 177.6493]
     };
-
-    function getColor(d) {
-      return d > 90 ? '#FF5733' :
-             d > 70 ? '#FF8C00' :
-             d > 50 ? '#FFD700' :
-             d > 30 ? '#1E90FF' :
-             d > 10 ? '#00CED1' :
-             d > 0  ? '#BA55D3' :
-                      '#DC143C';
-    }
 
     function drawChart(data) {
       const grouped = {};
@@ -167,11 +163,11 @@
         const coords = countryCoords[country];
         if (coords) {
           const circle = new google.maps.Circle({
-            strokeColor: "#000",
-            strokeOpacity: 0.9,
-            strokeWeight: 1.5,
-            fillColor: getColor(avg),
-            fillOpacity: 0.75,
+            strokeColor: "#000000",
+            strokeOpacity: 0.8,
+            strokeWeight: 1,
+            fillColor: "rgba(30, 144, 255, 0.4)", // semi-transparent blue
+            fillOpacity: 0.4,
             map,
             center: { lat: coords[0], lng: coords[1] },
             radius: Math.max(80000, avg * 3000)
@@ -216,7 +212,7 @@
         fullData = XLSX.utils.sheet_to_json(sheet);
 
         drawChart(fullData);
-        // initMap will be called by Google Maps API
+        // Map loads separately via callback
       })
       .catch(error => {
         console.error("Failed to load Excel file:", error);
