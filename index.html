@@ -12,7 +12,7 @@
   <style>
     html { scroll-behavior: smooth; }
     #internetMap {
-      height: 450px;
+      height: 500px;
       margin-top: 2rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -51,7 +51,16 @@
         "Solomon Islands": [-9.6457, 160.1562],
         "Vanuatu": [-15.3767, 166.9592],
         "Kiribati": [1.8709, -157.3630],
-        "Marshall Islands": [7.1315, 171.1845]
+        "Marshall Islands": [7.1315, 171.1845],
+        "Micronesia (Federated States of)": [6.8870, 158.2270],
+        "Nauru": [-0.5228, 166.9315],
+        "Palau": [7.5150, 134.5825],
+        "Cook Islands": [-21.2367, -159.7777],
+        "French Polynesia": [-17.6797, -149.4068],
+        "Niue": [-19.0544, -169.8672],
+        "Samoa": [-13.7590, -172.1046],
+        "Tonga": [-21.1790, -175.1982],
+        "Tuvalu": [-7.1095, 177.6493]
       };
 
       function getColor(d) {
@@ -146,7 +155,7 @@
         Object.entries(countryAvgs).forEach(([country, avg]) => {
           const coords = countryCoords[country];
           if (coords && avg !== undefined) {
-            const radius = Math.max(5, Math.sqrt(avg) * 1.5); // scaled by usage
+            const radius = Math.max(5, Math.sqrt(avg) * 1.5); // usage-scaling
 
             L.circleMarker(coords, {
               radius,
