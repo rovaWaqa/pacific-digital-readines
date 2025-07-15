@@ -7,16 +7,18 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     html { scroll-behavior: smooth; }
-
     #internetMap {
       height: 500px;
       margin-top: 2rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
+    .gm-style-iw-c button.gm-ui-hover-effect {
+      display: none !important;
+    }
     .filter-btn.active {
       background-color: #3B82F6;
       color: white;
@@ -24,39 +26,12 @@
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-
   <header class="bg-blue-700 text-white py-6 text-center shadow fixed w-full top-0 left-0 z-50">
     <h1 class="text-3xl font-bold">🌐 Pacific Islands Digital Pulse</h1>
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 pt-32 pb-16">
-
-    <!-- Summary Cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-      <div class="bg-white shadow rounded-xl p-4 text-center">
-        <h3 class="text-sm text-gray-500">🌐 Avg Internet Usage</h3>
-        <p id="card-internet" class="text-2xl font-semibold text-blue-700">--%</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4 text-center">
-        <h3 class="text-sm text-gray-500">📡 Avg 4G Coverage</h3>
-        <p id="card-4g" class="text-2xl font-semibold text-green-600">--%</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4 text-center">
-        <h3 class="text-sm text-gray-500">🔐 Countries with Cybersecurity Policy</h3>
-        <p id="card-cyber-policy" class="text-2xl font-semibold text-purple-600">--</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4 text-center">
-        <h3 class="text-sm text-gray-500">🏛️ Avg E-Government Index</h3>
-        <p id="card-egov" class="text-2xl font-semibold text-yellow-600">--</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4 text-center">
-        <h3 class="text-sm text-gray-500">💻 Avg Online Service Index</h3>
-        <p id="card-online" class="text-2xl font-semibold text-pink-600">--</p>
-      </div>
-    </section>
-
-    <!-- Chart Section -->
+  <main class="max-w-7xl mx-auto px-4 pt-32 pb-20">
     <section>
       <h2 class="text-xl font-bold text-blue-700 mb-2">📶 Avg Internet & 4G Coverage by Country</h2>
       <div class="flex flex-wrap gap-2 mb-6">
@@ -69,9 +44,8 @@
       </div>
     </section>
 
-    <!-- Map Section -->
     <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">🗺️ Internet Usage Map (Grey Styled)</h2>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">🗌 Internet Usage Map (Google Maps)</h2>
       <div class="flex flex-wrap gap-2 mb-6">
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
@@ -80,240 +54,47 @@
       <div id="internetMap"></div>
     </section>
 
+    <!-- Key Insights -->
+    <section class="py-20 bg-white">
+      <div class="container mx-auto px-4 text-center mb-16">
+        <h2 class="text-4xl font-bold mb-4">Key Insights</h2>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">Critical findings from the Pacific connectivity data analysis</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div class="border-2 border-orange-200 bg-orange-50 p-6 rounded-xl shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="trending-up" class="w-6 h-6 text-orange-600"></i>
+            <h3 class="text-xl font-bold text-gray-900">Digital Divide</h3>
+          </div>
+          <p class="text-gray-700">French Polynesia leads with 88.5% internet usage, while other nations lag significantly behind.</p>
+        </div>
+        <div class="border-2 border-red-200 bg-red-50 p-6 rounded-xl shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="alert-circle" class="w-6 h-6 text-red-600"></i>
+            <h3 class="text-xl font-bold text-gray-900">Broadband Infrastructure</h3>
+          </div>
+          <p class="text-gray-700">Most Pacific nations have fewer than 5 broadband subscriptions per 100 inhabitants.</p>
+        </div>
+        <div class="border-2 border-green-200 bg-green-50 p-6 rounded-xl shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+            <h3 class="text-xl font-bold text-gray-900">E-Government Progress</h3>
+          </div>
+          <p class="text-gray-700">Fiji shows the strongest e-government performance with an E-Government Index of 0.62.</p>
+        </div>
+        <div class="border-2 border-blue-200 bg-blue-50 p-6 rounded-xl shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="signal" class="w-6 h-6 text-blue-600"></i>
+            <h3 class="text-xl font-bold text-gray-900">Mobile Coverage</h3>
+          </div>
+          <p class="text-gray-700">4G coverage varies dramatically, with Samoa at 99% and French Polynesia at 90%.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
-    const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
-    const selectedGraphRegions = new Set();
-    const selectedMapRegions = new Set();
-    let fullData = [];
-    let chartInstance = null;
-    let mapInstance = null;
-    let mapCircles = [];
-
-    const countryCoords = {
-      "Fiji": [-17.7134, 178.0650],
-      "New Caledonia": [-20.9043, 165.6180],
-      "Solomon Islands": [-9.6457, 160.1562],
-      "Samoa": [-13.7590, -172.1046],
-      "Tonga": [-21.178986, -175.198242],
-      "Vanuatu": [-15.3767, 166.9592],
-      "Kiribati": [1.8709, -157.3626],
-      "Marshall Islands": [7.1315, 171.1845],
-      "Micronesia (Federated States of)": [6.8875, 158.2151],
-      "Nauru": [-0.5228, 166.9315],
-      "Palau": [7.51498, 134.58252],
-      "Cook Islands": [-21.2367, -159.7777],
-      "French Polynesia": [-17.6797, -149.4068],
-      "Niue": [-19.0544, -169.8672],
-      "Papua New Guinea": [-6.314993, 143.9555],
-      "Tuvalu": [-7.1095, 177.6493]
-    };
-
-    function updateSummaryCards(data) {
-      const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-
-      const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-      const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-      const cyberPolicyCountries = new Set(
-        data.filter(d => (d["Cybersecurity Policy"] + "").trim().toLowerCase() === "yes").map(d => d["Country"])
-      );
-      const egovVals = data.map(d => parseFloat(d["E-Goverment Index"])).filter(v => !isNaN(v));
-      const onlineVals = data.map(d => parseFloat(d["Online service Index"])).filter(v => !isNaN(v));
-
-      document.getElementById("card-internet").innerText = avg(internetVals).toFixed(1) + "%";
-      document.getElementById("card-4g").innerText = avg(coverageVals).toFixed(1) + "%";
-      document.getElementById("card-cyber-policy").innerText = cyberPolicyCountries.size;
-      document.getElementById("card-egov").innerText = avg(egovVals).toFixed(2);
-      document.getElementById("card-online").innerText = avg(onlineVals).toFixed(2);
-    }
-
-    function drawChart(data) {
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"]?.trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
-
-      const labels = [];
-      const internetData = [];
-      const coverageData = [];
-
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-
-        labels.push(country);
-        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
-      }
-
-      const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
-      if (chartInstance) chartInstance.destroy();
-
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Internet Usage (%)",
-              data: internetData,
-              backgroundColor: "rgba(59, 130, 246, 0.6)",
-              borderRadius: 5
-            },
-            {
-              label: "4G Coverage (%)",
-              data: coverageData,
-              type: 'line',
-              fill: false,
-              borderColor: "rgba(16, 185, 129, 1)",
-              backgroundColor: "rgba(16, 185, 129, 0.6)",
-              tension: 0.3,
-              pointRadius: 5,
-              pointHoverRadius: 7
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                boxWidth: 15,
-                padding: 10
-              }
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: context => `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: { display: true, text: "Percentage" }
-            }
-          }
-        }
-      });
-    }
-
-    function drawMap(data) {
-      if (!mapInstance) return;
-
-      mapCircles.forEach(circle => circle.setMap(null));
-      mapCircles = [];
-
-      const filtered = selectedMapRegions.size === 0
-        ? data
-        : data.filter(d => selectedMapRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
-
-      const grouped = {};
-      filtered.forEach(d => {
-        const country = d["Country"]?.trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
-
-      for (const country in grouped) {
-        const vals = grouped[country].map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        if (!vals.length) continue;
-        const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-        const coords = countryCoords[country];
-        if (!coords) continue;
-
-        const circle = new google.maps.Circle({
-          map: mapInstance,
-          center: { lat: coords[0], lng: coords[1] },
-          radius: Math.max(100000, avg * 6000),
-          fillColor: "rgba(59,130,246,0.4)",
-          fillOpacity: 0.5,
-          strokeColor: "#000",
-          strokeOpacity: 0.7,
-          strokeWeight: 1
-        });
-
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%`
-        });
-
-        circle.addListener("mouseover", () => {
-          infoWindow.setPosition(circle.getCenter());
-          infoWindow.open(mapInstance);
-        });
-
-        circle.addListener("mouseout", () => {
-          infoWindow.close();
-        });
-
-        mapCircles.push(circle);
-      }
-    }
-
-    function initMap() {
-      const styledMapType = new google.maps.StyledMapType([
-        {
-          featureType: "all",
-          elementType: "all",
-          stylers: [{ saturation: -100 }, { lightness: 40 }]
-        }
-      ], { name: "Light Grey" });
-
-      mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
-        zoom: 3,
-        center: { lat: 0, lng: 180 },
-        mapTypeControlOptions: {
-          mapTypeIds: ["styled_map", "roadmap"]
-        }
-      });
-
-      mapInstance.mapTypes.set("styled_map", styledMapType);
-      mapInstance.setMapTypeId("styled_map");
-
-      drawMap(fullData);
-    }
-
-    fetch(excelURL)
-      .then(r => r.arrayBuffer())
-      .then(data => {
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        fullData = XLSX.utils.sheet_to_json(sheet);
-        drawChart(fullData);
-        updateSummaryCards(fullData);
-        if (window.google && window.google.maps) initMap();
-      });
-
-    document.querySelectorAll(".graph-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedGraphRegions.has(region)) selectedGraphRegions.delete(region);
-        else selectedGraphRegions.add(region);
-        const filtered = selectedGraphRegions.size === 0
-          ? fullData
-          : fullData.filter(d => selectedGraphRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
-        drawChart(filtered);
-      });
-    });
-
-    document.querySelectorAll(".map-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedMapRegions.has(region)) selectedMapRegions.delete(region);
-        else selectedMapRegions.add(region);
-        drawMap(fullData);
-      });
-    });
+    lucide.createIcons();
   </script>
 
   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
