@@ -17,21 +17,19 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    /* Hide the default close button on Google Maps InfoWindow */
     .gm-style-iw-c button.gm-ui-hover-effect {
       display: none !important;
     }
 
-    /* Floating filter styles */
     #filterPanel {
       position: fixed;
       left: 1rem;
-      top: 7rem; /* below header */
+      top: 7rem;
       background: white;
-      border: 1px solid #e5e7eb; /* Tailwind gray-300 */
+      border: 1px solid #e5e7eb;
       box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
       padding: 1rem;
-      border-radius: 0.375rem; /* rounded-md */
+      border-radius: 0.375rem;
       width: 16rem;
       z-index: 1000;
     }
@@ -45,16 +43,14 @@
         border: none;
         padding: 0;
       }
-    }
 
-    main {
-      margin-left: 18rem; /* space for the filter */
-    }
-
-    @media (max-width: 768px) {
       main {
         margin-left: 0;
       }
+    }
+
+    main {
+      margin-left: 18rem;
     }
   </style>
 </head>
@@ -65,25 +61,23 @@
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <!-- Floating filter panel -->
-  <div id="filterPanel" aria-label="Region filter panel">
-    <label for="regionFilter" class="block text-sm font-semibold text-gray-700 mb-2">🌍 Filter by Region:</label>
+  <!-- Filter Panel -->
+  <div id="filterPanel">
+    <label for="regionFilter" class="block text-sm font-semibold text-gray-700 mb-2">🌍 Filter by Cultural Region:</label>
     <select id="regionFilter" class="w-full border border-gray-300 rounded p-2 text-gray-700">
-  <option value="All">All Regions</option>
-  <option value="Melanesia">Melanesia</option>
-  <option value="Micronesia">Micronesia</option>
-  <option value="Polynesia">Polynesia</option>
-</select>
+      <option value="All">All Cultural Regions</option>
+      <option value="Melanesia">Melanesia</option>
+      <option value="Micronesia">Micronesia</option>
+      <option value="Polynesia">Polynesia</option>
+    </select>
   </div>
 
   <main class="max-w-6xl mx-auto px-4 pt-32 pb-16">
-    <!-- Chart -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
       <canvas id="avgUsageCoverageChart"></canvas>
     </section>
 
-    <!-- Map -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Google Maps)</h2>
       <div id="internetMap"></div>
@@ -120,7 +114,7 @@
     function drawChart(data) {
       const grouped = {};
       data.forEach(d => {
-        const country = d["Country"].trim();
+        const country = d["Country"]?.trim();
         if (!grouped[country]) grouped[country] = [];
         grouped[country].push(d);
       });
@@ -200,7 +194,7 @@
       const countryAvgs = {};
       const grouped = {};
       data.forEach(d => {
-        const country = d["Country"].trim();
+        const country = d["Country"]?.trim();
         if (!grouped[country]) grouped[country] = [];
         grouped[country].push(d);
       });
@@ -210,7 +204,7 @@
         const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
         if (vals.length) {
           const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-          countryAvgs[country.trim()] = avg;
+          countryAvgs[country] = avg;
         }
       }
 
@@ -274,29 +268,6 @@
       }
     }
 
-    function populateRegionFilter(data) {
-      const regions = new Set(data.map(d => d["Region"]?.trim()).filter(Boolean));
-      const select = document.getElementById("regionFilter");
-
-      regions.forEach(region => {
-        const option = document.createElement("option");
-        option.value = region;
-        option.textContent = region;
-        select.appendChild(option);
-      });
-
-      select.addEventListener("change", () => {
-        const selectedRegion = select.value;
-        const filteredData = selectedRegion === "All"
-          ? fullData
-          : fullData.filter(d => d["Region"]?.trim() === selectedRegion);
-
-        drawChart(filteredData);
-        drawMap(filteredData);
-      });
-    }
-
-    // Initialize data fetching and initial rendering
     fetch(excelURL)
       .then(r => r.arrayBuffer())
       .then(data => {
@@ -305,7 +276,6 @@
         fullData = XLSX.utils.sheet_to_json(sheet);
 
         drawChart(fullData);
-        populateRegionFilter(fullData);
         drawMap(fullData);
       })
       .catch(error => {
@@ -313,12 +283,21 @@
         alert("Error loading data.");
       });
 
-    // Google Maps callback is handled by the async script loading below
+    document.getElementById("regionFilter").addEventListener("change", function () {
+      const selectedRegion = this.value;
+
+      const filteredData = selectedRegion === "All"
+        ? fullData
+        : fullData.filter(d => d["CULTURAL REGION"]?.trim() === selectedRegion);
+
+      drawChart(filteredData);
+      drawMap(filteredData);
+    });
   </script>
 
   <!-- Google Maps API -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
   </script>
 </body>
 </html>
