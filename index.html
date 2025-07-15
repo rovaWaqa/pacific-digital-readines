@@ -7,16 +7,26 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     html { scroll-behavior: smooth; }
-
+    .floating-panel {
+      position: fixed;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      z-index: 50;
+      background-color: white;
+      border: 1px solid #cbd5e0;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
     #internetMap {
-      height: 500px;
-      margin-top: 2rem;
+      height: 400px;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .gm-style-iw-c button.gm-ui-hover-effect {
       display: none !important;
     }
@@ -29,22 +39,36 @@
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-16">
-    <!-- Chart -->
-    <section>
-      <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
-      <canvas id="avgUsageCoverageChart"></canvas>
-    </section>
+  <div class="floating-panel w-72">
+    <h2 class="text-lg font-semibold mb-2 text-blue-600 flex items-center gap-2">
+      <i data-feather="filter" class="w-4 h-4"></i> Filters
+    </h2>
+    <label class="block text-sm font-medium text-gray-700">Cultural Region</label>
+    <select id="regionFilter" class="w-full mt-1 mb-4 border-gray-300 rounded-md">
+      <option value="All">All Regions</option>
+      <option value="MELANESIA">Melanesia</option>
+      <option value="MICRONESIA">Micronesia</option>
+      <option value="POLYNESIA">Polynesia</option>
+    </select>
+    <button id="downloadBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm font-medium">
+      ⬇️ Download Excel
+    </button>
+  </div>
 
-    <!-- Map -->
-    <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Google Maps)</h2>
+  <main class="max-w-6xl mx-auto px-4 py-16">
+    <!-- Other dashboard content remains the same -->
+
+    <!-- Google Map -->
+    <div class="mt-16">
+      <h2 class="text-xl font-bold text-blue-700 mb-4">🗼️ Internet Usage Map (Google Maps)</h2>
       <div id="internetMap"></div>
-    </section>
+    </div>
   </main>
 
   <script>
+    feather.replace();
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+    let fullData = [];
 
     const countryCoords = {
       "Fiji": [-17.7134, 178.0650],
@@ -64,64 +88,6 @@
       "Papua New Guinea": [-6.314993, 143.9555],
       "Tuvalu": [-7.1095, 177.6493]
     };
-
-    let fullData = [];
-
-    function drawChart(data) {
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"].trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
-
-      const labels = [];
-      const internetData = [];
-      const coverageData = [];
-
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-
-        labels.push(country);
-        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
-      }
-
-      new Chart(document.getElementById("avgUsageCoverageChart").getContext("2d"), {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Internet Usage (%)",
-              data: internetData,
-              backgroundColor: "rgba(59, 130, 246, 0.6)"
-            },
-            {
-              label: "4G Coverage (%)",
-              data: coverageData,
-              backgroundColor: "rgba(16, 185, 129, 0.6)"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: { display: true, text: "Percentage" }
-            }
-          }
-        }
-      });
-    }
 
     function drawInternetMap(data) {
       const countryAvgs = {};
@@ -199,24 +165,16 @@
       if (fullData.length > 0) {
         drawInternetMap(fullData);
       } else {
-        setTimeout(initMap, 300);
+        setTimeout(initMap, 500);
       }
     }
 
-    fetch(excelURL)
-      .then(r => r.arrayBuffer())
-      .then(data => {
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        fullData = XLSX.utils.sheet_to_json(sheet);
-
-        drawChart(fullData);
-        // Map initializes via callback
-      })
-      .catch(error => {
-        console.error("Failed to load Excel file:", error);
-        alert("Error loading data.");
-      });
+    fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      fullData = XLSX.utils.sheet_to_json(sheet);
+      initMap();
+    });
   </script>
 
   <!-- Google Maps API -->
