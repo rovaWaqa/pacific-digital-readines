@@ -42,10 +42,7 @@
         <h3 class="text-sm text-gray-500">📡 Avg 4G Coverage</h3>
         <p id="card-4g" class="text-2xl font-semibold text-green-600">--%</p>
       </div>
-      <div class="bg-white shadow rounded-xl p-4 text-center">
-        <h3 class="text-sm text-gray-500">🔐 Countries with Cybersecurity Policy</h3>
-        <p id="card-cyber-policy" class="text-2xl font-semibold text-purple-600">--</p>
-      </div>
+      <!-- Removed Cybersecurity Policy Card -->
       <div class="bg-white shadow rounded-xl p-4 text-center">
         <h3 class="text-sm text-gray-500">🏛️ Avg E-Government Index</h3>
         <p id="card-egov" class="text-2xl font-semibold text-yellow-600">--</p>
@@ -115,16 +112,12 @@
 
       const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
       const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-      const cyberPolicyCountries = data.filter(d => {
-  const val = (d["Cybersecurity Policy"] + "").trim();
-  return val !== "" && val.toLowerCase() !== "n/a";  // exclude empty or 'N/A'
-}).length;
+      // Removed Cybersecurity Policy count here
       const egovVals = data.map(d => parseFloat(d[" E-Goverment Index"])).filter(v => !isNaN(v));
       const onlineVals = data.map(d => parseFloat(d[" Online service Index"])).filter(v => !isNaN(v));
 
       document.getElementById("card-internet").innerText = avg(internetVals).toFixed(1) + "%";
       document.getElementById("card-4g").innerText = avg(coverageVals).toFixed(1) + "%";
-      document.getElementById("card-cyber-policy").innerText = cyberPolicyCountries.size;
       document.getElementById("card-egov").innerText = avg(egovVals).toFixed(2);
       document.getElementById("card-online").innerText = avg(onlineVals).toFixed(2);
     }
@@ -247,11 +240,11 @@
       disableAutoPan: true
       });
 
-// Override the default style of the close button (hide it)
-google.maps.event.addListener(infoWindow, 'domready', () => {
-  const iwCloseBtn = document.querySelector('.gm-ui-hover-effect');
-  if (iwCloseBtn) iwCloseBtn.style.display = 'none';
-});
+      // Hide the close button on info window
+      google.maps.event.addListener(infoWindow, 'domready', () => {
+        const iwCloseBtn = document.querySelector('.gm-ui-hover-effect');
+        if (iwCloseBtn) iwCloseBtn.style.display = 'none';
+      });
 
         circle.addListener("mouseover", () => {
           infoWindow.setPosition(circle.getCenter());
