@@ -30,19 +30,6 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 pt-32 pb-16">
-    <!-- Filter Section -->
-    <section class="mb-8">
-      <label for="regionFilter" class="block text-sm font-semibold text-gray-700 mb-2">
-        🌍 Filter by Cultural Region:
-      </label>
-      <select id="regionFilter" class="w-full md:w-64 border border-gray-300 rounded p-2 text-gray-700">
-        <option value="All">All Cultural Regions</option>
-        <option value="Melanesia">Melanesia</option>
-        <option value="Micronesia">Micronesia</option>
-        <option value="Polynesia">Polynesia</option>
-      </select>
-    </section>
-
     <!-- Chart Section -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
@@ -252,22 +239,11 @@
         console.error("Failed to load Excel file:", error);
         alert("Error loading data.");
       });
-
-    document.getElementById("regionFilter").addEventListener("change", function () {
-      const selectedRegion = this.value;
-
-      const filteredData = selectedRegion === "All"
-        ? fullData
-        : fullData.filter(d => d["CULTURAL REGION"]?.trim() === selectedRegion);
-
-      drawChart(filteredData);
-      drawMap(filteredData);
-    });
   </script>
 
   <!-- Google Maps API -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap">
   </script>
 </body>
 </html>
