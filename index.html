@@ -89,37 +89,44 @@
       }
 
       new Chart(document.getElementById("avgUsageCoverageChart").getContext("2d"), {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Internet Usage (%)",
-              data: internetData,
-              backgroundColor: "rgba(59, 130, 246, 0.6)"
-            },
-            {
-              label: "4G Coverage (%)",
-              data: coverageData,
-              backgroundColor: "rgba(16, 185, 129, 0.6)"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: { display: true, text: "Percentage" }
-            }
-          }
-        }
-      });
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: "Internet Usage (%)",
+        data: internetData,
+        backgroundColor: "rgba(59, 130, 246, 0.6)", // Tailwind blue-500
+        borderRadius: 5
+      },
+      {
+        label: "4G Coverage (%)",
+        data: coverageData,
+        type: 'line',
+        fill: false,
+        borderColor: "rgba(16, 185, 129, 1)", // Tailwind green-500
+        backgroundColor: "rgba(16, 185, 129, 0.6)",
+        tension: 0.3,
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        title: { display: true, text: "Percentage" }
+      }
+    }
+  }
+});
     }
 
     function drawMap(data) {
