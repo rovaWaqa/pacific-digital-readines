@@ -20,38 +20,6 @@
     .gm-style-iw-c button.gm-ui-hover-effect {
       display: none !important;
     }
-
-    #filterPanel {
-      position: fixed;
-      left: 1rem;
-      top: 7rem;
-      background: white;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-      padding: 1rem;
-      border-radius: 0.375rem;
-      width: 16rem;
-      z-index: 1000;
-    }
-
-    @media (max-width: 768px) {
-      #filterPanel {
-        position: static;
-        width: auto;
-        margin-bottom: 1rem;
-        box-shadow: none;
-        border: none;
-        padding: 0;
-      }
-
-      main {
-        margin-left: 0;
-      }
-    }
-
-    main {
-      margin-left: 18rem;
-    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -61,23 +29,27 @@
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <!-- Filter Panel -->
-  <div id="filterPanel">
-    <label for="regionFilter" class="block text-sm font-semibold text-gray-700 mb-2">🌍 Filter by Cultural Region:</label>
-    <select id="regionFilter" class="w-full border border-gray-300 rounded p-2 text-gray-700">
-      <option value="All">All Cultural Regions</option>
-      <option value="Melanesia">Melanesia</option>
-      <option value="Micronesia">Micronesia</option>
-      <option value="Polynesia">Polynesia</option>
-    </select>
-  </div>
-
   <main class="max-w-6xl mx-auto px-4 pt-32 pb-16">
+    <!-- Filter Section -->
+    <section class="mb-8">
+      <label for="regionFilter" class="block text-sm font-semibold text-gray-700 mb-2">
+        🌍 Filter by Cultural Region:
+      </label>
+      <select id="regionFilter" class="w-full md:w-64 border border-gray-300 rounded p-2 text-gray-700">
+        <option value="All">All Cultural Regions</option>
+        <option value="Melanesia">Melanesia</option>
+        <option value="Micronesia">Micronesia</option>
+        <option value="Polynesia">Polynesia</option>
+      </select>
+    </section>
+
+    <!-- Chart Section -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
       <canvas id="avgUsageCoverageChart"></canvas>
     </section>
 
+    <!-- Map Section -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Google Maps)</h2>
       <div id="internetMap"></div>
@@ -262,8 +234,6 @@
           });
 
           mapCircles.push(circle);
-        } else {
-          console.warn("Missing coordinates for:", country);
         }
       }
     }
