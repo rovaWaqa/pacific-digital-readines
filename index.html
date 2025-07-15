@@ -32,7 +32,7 @@
 
   <main class="max-w-7xl mx-auto px-4 pt-32 pb-16">
 
-    <!-- Global Summary Cards -->
+    <!-- Summary Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
       <div class="bg-white shadow rounded-xl p-4 text-center">
         <h3 class="text-sm text-gray-500">🌐 Avg Internet Usage</h3>
@@ -71,7 +71,7 @@
 
     <!-- Map Section -->
     <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">🗺️ Internet Usage Map (Google Maps)</h2>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">🗺️ Internet Usage Map (Grey Styled)</h2>
       <div class="flex flex-wrap gap-2 mb-6">
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
@@ -79,6 +79,7 @@
       </div>
       <div id="internetMap"></div>
     </section>
+
   </main>
 
   <script>
@@ -110,20 +111,19 @@
     };
 
     function updateSummaryCards(data) {
-      const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+      const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
       const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
       const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-      const cyberPolicyCount = new Set(
-        data.filter(d => (d["Cybersecurity Policy"] + "").trim().toLowerCase() === "yes")
-            .map(d => d["Country"]?.trim())
-      ).size;
+      const cyberPolicyCountries = new Set(
+        data.filter(d => (d["Cybersecurity Policy"] + "").trim().toLowerCase() === "yes").map(d => d["Country"])
+      );
       const egovVals = data.map(d => parseFloat(d["E-Goverment Index"])).filter(v => !isNaN(v));
       const onlineVals = data.map(d => parseFloat(d["Online service Index"])).filter(v => !isNaN(v));
 
       document.getElementById("card-internet").innerText = avg(internetVals).toFixed(1) + "%";
       document.getElementById("card-4g").innerText = avg(coverageVals).toFixed(1) + "%";
-      document.getElementById("card-cyber-policy").innerText = cyberPolicyCount;
+      document.getElementById("card-cyber-policy").innerText = cyberPolicyCountries.size;
       document.getElementById("card-egov").innerText = avg(egovVals).toFixed(2);
       document.getElementById("card-online").innerText = avg(onlineVals).toFixed(2);
     }
@@ -191,9 +191,7 @@
               mode: 'index',
               intersect: false,
               callbacks: {
-                label: function (context) {
-                  return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
-                }
+                label: context => `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`
               }
             }
           },
@@ -209,12 +207,7 @@
     }
 
     function drawMap(data) {
-      if (!mapInstance) {
-        mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
-          zoom: 3,
-          center: { lat: 0, lng: 180 }
-        });
-      }
+      if (!mapInstance) return;
 
       mapCircles.forEach(circle => circle.setMap(null));
       mapCircles = [];
@@ -241,7 +234,8 @@
           map: mapInstance,
           center: { lat: coords[0], lng: coords[1] },
           radius: Math.max(100000, avg * 6000),
-          fillColor: "rgba(59,130,246,0.5)",
+          fillColor: "rgba(59,130,246,0.4)",
+          fillOpacity: 0.5,
           strokeColor: "#000",
           strokeOpacity: 0.7,
           strokeWeight: 1
@@ -264,6 +258,29 @@
       }
     }
 
+    function initMap() {
+      const styledMapType = new google.maps.StyledMapType([
+        {
+          featureType: "all",
+          elementType: "all",
+          stylers: [{ saturation: -100 }, { lightness: 40 }]
+        }
+      ], { name: "Light Grey" });
+
+      mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
+        zoom: 3,
+        center: { lat: 0, lng: 180 },
+        mapTypeControlOptions: {
+          mapTypeIds: ["styled_map", "roadmap"]
+        }
+      });
+
+      mapInstance.mapTypes.set("styled_map", styledMapType);
+      mapInstance.setMapTypeId("styled_map");
+
+      drawMap(fullData);
+    }
+
     fetch(excelURL)
       .then(r => r.arrayBuffer())
       .then(data => {
@@ -271,19 +288,16 @@
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         fullData = XLSX.utils.sheet_to_json(sheet);
         drawChart(fullData);
-        drawMap(fullData);
         updateSummaryCards(fullData);
+        if (window.google && window.google.maps) initMap();
       });
 
     document.querySelectorAll(".graph-filter").forEach(btn => {
       btn.addEventListener("click", () => {
         const region = btn.getAttribute("data-region");
         btn.classList.toggle("active");
-        if (selectedGraphRegions.has(region)) {
-          selectedGraphRegions.delete(region);
-        } else {
-          selectedGraphRegions.add(region);
-        }
+        if (selectedGraphRegions.has(region)) selectedGraphRegions.delete(region);
+        else selectedGraphRegions.add(region);
         const filtered = selectedGraphRegions.size === 0
           ? fullData
           : fullData.filter(d => selectedGraphRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
@@ -295,21 +309,13 @@
       btn.addEventListener("click", () => {
         const region = btn.getAttribute("data-region");
         btn.classList.toggle("active");
-        if (selectedMapRegions.has(region)) {
-          selectedMapRegions.delete(region);
-        } else {
-          selectedMapRegions.add(region);
-        }
+        if (selectedMapRegions.has(region)) selectedMapRegions.delete(region);
+        else selectedMapRegions.add(region);
         drawMap(fullData);
       });
     });
-
-    function initMap() {
-      drawMap(fullData);
-    }
   </script>
 
-  <!-- Replace with your actual API key -->
   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
 </body>
 </html>
