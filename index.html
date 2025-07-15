@@ -241,9 +241,16 @@
           strokeWeight: 1
         });
 
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%`
-        });
+       const infoWindow = new google.maps.InfoWindow({
+      content: `<div style="margin:0;padding:4px;"><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`,
+      disableAutoPan: true
+      });
+
+// Override the default style of the close button (hide it)
+google.maps.event.addListener(infoWindow, 'domready', () => {
+  const iwCloseBtn = document.querySelector('.gm-ui-hover-effect');
+  if (iwCloseBtn) iwCloseBtn.style.display = 'none';
+});
 
         circle.addListener("mouseover", () => {
           infoWindow.setPosition(circle.getCenter());
