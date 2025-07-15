@@ -9,16 +9,18 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     html { scroll-behavior: smooth; }
-
     #internetMap {
       height: 500px;
       margin-top: 2rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .gm-style-iw-c button.gm-ui-hover-effect {
       display: none !important;
+    }
+    .filter-btn.active {
+      background-color: #3B82F6;
+      color: white;
     }
   </style>
 </head>
@@ -30,6 +32,15 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 pt-32 pb-16">
+    <!-- Filter Buttons for Chart -->
+    <section class="mb-6">
+      <div class="flex gap-4 flex-wrap">
+        <button class="filter-btn border border-blue-500 px-4 py-2 rounded" data-region="Melanesia">Melanesia</button>
+        <button class="filter-btn border border-blue-500 px-4 py-2 rounded" data-region="Micronesia">Micronesia</button>
+        <button class="filter-btn border border-blue-500 px-4 py-2 rounded" data-region="Polynesia">Polynesia</button>
+      </div>
+    </section>
+
     <!-- Chart Section -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
@@ -45,6 +56,11 @@
 
   <script>
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
+    const selectedRegions = new Set();
+    let fullData = [];
+    let chartInstance = null;
+    let mapInstance = null;
+    let mapCircles = [];
 
     const countryCoords = {
       "Fiji": [-17.7134, 178.0650],
@@ -64,11 +80,6 @@
       "Papua New Guinea": [-6.314993, 143.9555],
       "Tuvalu": [-7.1095, 177.6493]
     };
-
-    let fullData = [];
-    let chartInstance = null;
-    let mapInstance = null;
-    let mapCircles = [];
 
     function drawChart(data) {
       const grouped = {};
@@ -225,6 +236,16 @@
       }
     }
 
+    function applyGraphFilter() {
+      let filteredData = fullData;
+
+      if (selectedRegions.size > 0) {
+        filteredData = fullData.filter(d => selectedRegions.has(d["CULTURAL REGION"]?.trim()));
+      }
+
+      drawChart(filteredData);
+    }
+
     fetch(excelURL)
       .then(r => r.arrayBuffer())
       .then(data => {
@@ -239,6 +260,20 @@
         console.error("Failed to load Excel file:", error);
         alert("Error loading data.");
       });
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const region = btn.getAttribute("data-region");
+        if (selectedRegions.has(region)) {
+          selectedRegions.delete(region);
+          btn.classList.remove("active");
+        } else {
+          selectedRegions.add(region);
+          btn.classList.add("active");
+        }
+        applyGraphFilter();
+      });
+    });
   </script>
 
   <!-- Google Maps API -->
