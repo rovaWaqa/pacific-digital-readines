@@ -115,9 +115,10 @@
 
       const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
       const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-      const cyberPolicyCountries = new Set(
-        data.filter(d => (d["Cybersecurity Policy"] + "").trim().toLowerCase() === "yes").map(d => d["Country"])
-      );
+      const cyberPolicyCountries = data.filter(d => {
+  const val = (d["Cybersecurity Policy"] + "").trim();
+  return val !== "" && val.toLowerCase() !== "n/a";  // exclude empty or 'N/A'
+}).length;
       const egovVals = data.map(d => parseFloat(d[" E-Goverment Index"])).filter(v => !isNaN(v));
       const onlineVals = data.map(d => parseFloat(d[" Online service Index"])).filter(v => !isNaN(v));
 
