@@ -7,26 +7,17 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     html { scroll-behavior: smooth; }
-    .floating-panel {
-      position: fixed;
-      top: 50%;
-      right: 1rem;
-      transform: translateY(-50%);
-      z-index: 50;
-      background-color: white;
-      border: 1px solid #cbd5e0;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
+
     #internetMap {
-      height: 400px;
+      height: 500px;
+      margin-top: 2rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
+    /* Hide the default close button on Google Maps InfoWindow */
     .gm-style-iw-c button.gm-ui-hover-effect {
       display: none !important;
     }
@@ -40,21 +31,21 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-16">
-    <section class="mb-12">
-      <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
-      <canvas id="internetChart"></canvas>
+    <!-- Chart -->
+    <section>
+      <h2 class="text-xl font-bold text-blue-700 mb-4">📶 Avg Internet & 4G Coverage by Country</h2>
+      <canvas id="avgUsageCoverageChart"></canvas>
     </section>
 
+    <!-- Map -->
     <section>
-      <h2 class="text-xl font-bold text-blue-700 mb-4">🗼️ Internet Usage Map (Google Maps)</h2>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Google Maps)</h2>
       <div id="internetMap"></div>
     </section>
   </main>
 
   <script>
-    feather.replace();
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
-    let fullData = [];
 
     const countryCoords = {
       "Fiji": [-17.7134, 178.0650],
@@ -75,7 +66,63 @@
       "Tuvalu": [-7.1095, 177.6493]
     };
 
-    function drawInternetMap(data) {
+    function drawChart(data) {
+      const grouped = {};
+      data.forEach(d => {
+        const country = d["Country"].trim();
+        if (!grouped[country]) grouped[country] = [];
+        grouped[country].push(d);
+      });
+
+      const labels = [];
+      const internetData = [];
+      const coverageData = [];
+
+      for (const country in grouped) {
+        const rows = grouped[country];
+        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
+
+        labels.push(country);
+        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
+        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
+      }
+
+      new Chart(document.getElementById("avgUsageCoverageChart").getContext("2d"), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Internet Usage (%)",
+              data: internetData,
+              backgroundColor: "rgba(59, 130, 246, 0.6)"
+            },
+            {
+              label: "4G Coverage (%)",
+              data: coverageData,
+              backgroundColor: "rgba(16, 185, 129, 0.6)"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: { display: true, text: "Percentage" }
+            }
+          }
+        }
+      });
+    }
+
+    function drawMap(data) {
       const countryAvgs = {};
       const grouped = {};
       data.forEach(d => {
@@ -86,11 +133,10 @@
 
       for (const country in grouped) {
         const rows = grouped[country];
-        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"]))
-                         .filter(v => !isNaN(v));
+        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
         if (vals.length) {
           const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-          countryAvgs[country] = avg;
+          countryAvgs[country.trim()] = avg;
         }
       }
 
@@ -104,7 +150,7 @@
 
       const map = new google.maps.Map(document.getElementById("internetMap"), {
         zoom: 3,
-        center: { lat: -10, lng: 180 },
+        center: { lat: 0, lng: 180 },
         mapTypeControlOptions: {
           mapTypeIds: ["styled_map", "roadmap"]
         }
@@ -120,7 +166,7 @@
             strokeColor: "#000000",
             strokeOpacity: 0.8,
             strokeWeight: 1,
-            fillColor: "rgba(34, 197, 94, 0.4)",
+            fillColor: "rgba(34, 197, 94, 0.4)", // semi-transparent indigo
             fillOpacity: 0.4,
             map,
             center: { lat: coords[0], lng: coords[1] },
@@ -142,69 +188,39 @@
           circle.addListener('mouseout', () => {
             infoWindow.close();
           });
+        } else {
+          console.warn("Missing coordinates for:", country);
         }
       }
     }
 
-    function drawInternetChart(data) {
-      const ctx = document.getElementById("internetChart").getContext("2d");
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"].trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
-
-      const labels = [];
-      const values = [];
-
-      for (const country in grouped) {
-        const vals = grouped[country].map(r => parseFloat(r["Proportion of individuals using the Internet"]))
-                                      .filter(v => !isNaN(v));
-        const avg = vals.length ? vals.reduce((a, b) => a + b) / vals.length : 0;
-        labels.push(country);
-        values.push(avg);
-      }
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Internet Usage (%)',
-            data: values,
-            backgroundColor: 'rgba(59, 130, 246, 0.6)'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
-        }
-      });
-    }
+    let fullData = [];
 
     function initMap() {
       if (fullData.length > 0) {
-        drawInternetMap(fullData);
-        drawInternetChart(fullData);
+        drawMap(fullData);
       } else {
         setTimeout(initMap, 500);
       }
     }
 
-    fetch(excelURL).then(r => r.arrayBuffer()).then(data => {
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      fullData = XLSX.utils.sheet_to_json(sheet);
-      initMap();
-    });
+    fetch(excelURL)
+      .then(r => r.arrayBuffer())
+      .then(data => {
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        fullData = XLSX.utils.sheet_to_json(sheet);
+
+        drawChart(fullData);
+        // Map loads separately via callback
+      })
+      .catch(error => {
+        console.error("Failed to load Excel file:", error);
+        alert("Error loading data.");
+      });
   </script>
 
+  <!-- Google Maps API -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap">
   </script>
