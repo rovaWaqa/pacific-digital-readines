@@ -118,8 +118,8 @@
       const cyberPolicyCountries = new Set(
         data.filter(d => (d["Cybersecurity Policy"] + "").trim().toLowerCase() === "yes").map(d => d["Country"])
       );
-      const egovVals = data.map(d => parseFloat(d["E-Goverment Index"])).filter(v => !isNaN(v));
-      const onlineVals = data.map(d => parseFloat(d["Online service Index"])).filter(v => !isNaN(v));
+      const egovVals = data.map(d => parseFloat(d[" E-Goverment Index"])).filter(v => !isNaN(v));
+      const onlineVals = data.map(d => parseFloat(d[" Online service Index"])).filter(v => !isNaN(v));
 
       document.getElementById("card-internet").innerText = avg(internetVals).toFixed(1) + "%";
       document.getElementById("card-4g").innerText = avg(coverageVals).toFixed(1) + "%";
