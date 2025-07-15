@@ -32,26 +32,32 @@
 
   <main class="max-w-7xl mx-auto px-4 pt-16 pb-16">
 
+    <!-- Card Filters -->
+    <section class="flex flex-wrap gap-2 mb-4 justify-center">
+      <button class="filter-btn card-filter border border-pink-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
+      <button class="filter-btn card-filter border border-pink-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
+      <button class="filter-btn card-filter border border-pink-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
+    </section>
+
     <!-- Summary Cards -->
     <section class="flex flex-wrap justify-between gap-6 mb-10 max-w-7xl mx-auto px-4">
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-blue-400 via-cyan-300 to-teal-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">🌐 Avg Internet Usage</h3>
-    <p id="card-internet" class="text-4xl font-extrabold leading-none">--%</p>
-  </div>
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-green-400 via-emerald-300 to-lime-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">📡 Avg 4G Coverage</h3>
-    <p id="card-4g" class="text-4xl font-extrabold leading-none">--%</p>
-  </div>
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-yellow-400 via-amber-300 to-orange-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">🏛️ Avg E-Government Index</h3>
-    <p id="card-egov" class="text-4xl font-extrabold leading-none">--</p>
-  </div>
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-pink-400 via-fuchsia-300 to-purple-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">💻 Avg Online Service Index</h3>
-    <p id="card-online" class="text-4xl font-extrabold leading-none">--</p>
-  </div>
-</section>
-
+      <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-blue-400 via-cyan-300 to-teal-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
+        <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">🌐 Avg Internet Usage</h3>
+        <p id="card-internet" class="text-4xl font-extrabold leading-none">--%</p>
+      </div>
+      <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-green-400 via-emerald-300 to-lime-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
+        <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">📡 Avg 4G Coverage</h3>
+        <p id="card-4g" class="text-4xl font-extrabold leading-none">--%</p>
+      </div>
+      <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-yellow-400 via-amber-300 to-orange-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
+        <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">🏛️ Avg E-Government Index</h3>
+        <p id="card-egov" class="text-4xl font-extrabold leading-none">--</p>
+      </div>
+      <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-pink-400 via-fuchsia-300 to-purple-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
+        <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">💻 Avg Online Service Index</h3>
+        <p id="card-online" class="text-4xl font-extrabold leading-none">--</p>
+      </div>
+    </section>
 
     <!-- Chart Section -->
     <section>
@@ -83,6 +89,7 @@
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
     const selectedGraphRegions = new Set();
     const selectedMapRegions = new Set();
+    const selectedCardRegions = new Set();
     let fullData = [];
     let chartInstance = null;
     let mapInstance = null;
@@ -112,7 +119,6 @@
 
       const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
       const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-      // Removed Cybersecurity Policy count here
       const egovVals = data.map(d => parseFloat(d[" E-Goverment Index"])).filter(v => !isNaN(v));
       const onlineVals = data.map(d => parseFloat(d[" Online service Index"])).filter(v => !isNaN(v));
 
@@ -176,10 +182,7 @@
           plugins: {
             legend: {
               position: 'bottom',
-              labels: {
-                boxWidth: 15,
-                padding: 10
-              }
+              labels: { boxWidth: 15, padding: 10 }
             },
             tooltip: {
               mode: 'index',
@@ -190,11 +193,7 @@
             }
           },
           scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: { display: true, text: "Percentage" }
-            }
+            y: { beginAtZero: true, max: 100, title: { display: true, text: "Percentage" } }
           }
         }
       });
@@ -235,16 +234,15 @@
           strokeWeight: 1
         });
 
-       const infoWindow = new google.maps.InfoWindow({
-      content: `<div style="margin:0;padding:4px;"><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`,
-      disableAutoPan: true
-      });
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div style="margin:0;padding:4px;"><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`,
+          disableAutoPan: true
+        });
 
-      // Hide the close button on info window
-      google.maps.event.addListener(infoWindow, 'domready', () => {
-        const iwCloseBtn = document.querySelector('.gm-ui-hover-effect');
-        if (iwCloseBtn) iwCloseBtn.style.display = 'none';
-      });
+        google.maps.event.addListener(infoWindow, 'domready', () => {
+          const iwCloseBtn = document.querySelector('.gm-ui-hover-effect');
+          if (iwCloseBtn) iwCloseBtn.style.display = 'none';
+        });
 
         circle.addListener("mouseover", () => {
           infoWindow.setPosition(circle.getCenter());
@@ -261,11 +259,7 @@
 
     function initMap() {
       const styledMapType = new google.maps.StyledMapType([
-        {
-          featureType: "all",
-          elementType: "all",
-          stylers: [{ saturation: -100 }, { lightness: 40 }]
-        }
+        { featureType: "all", elementType: "all", stylers: [{ saturation: -100 }, { lightness: 40 }] }
       ], { name: "Light Grey" });
 
       mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
@@ -313,6 +307,21 @@
         if (selectedMapRegions.has(region)) selectedMapRegions.delete(region);
         else selectedMapRegions.add(region);
         drawMap(fullData);
+      });
+    });
+
+    document.querySelectorAll(".card-filter").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const region = btn.getAttribute("data-region");
+        btn.classList.toggle("active");
+        if (selectedCardRegions.has(region)) selectedCardRegions.delete(region);
+        else selectedCardRegions.add(region);
+
+        const filtered = selectedCardRegions.size === 0
+          ? fullData
+          : fullData.filter(d => selectedCardRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
+
+        updateSummaryCards(filtered);
       });
     });
   </script>
