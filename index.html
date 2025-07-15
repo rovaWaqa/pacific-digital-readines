@@ -32,8 +32,29 @@
 
   <main class="max-w-7xl mx-auto px-4 pt-32 pb-16">
 
-    <!-- Regional Summary Cards -->
-    <section id="summaryCards"></section>
+    <!-- Global Summary Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <div class="bg-white shadow rounded-xl p-4 text-center">
+        <h3 class="text-sm text-gray-500">🌐 Avg Internet Usage</h3>
+        <p id="card-internet" class="text-2xl font-semibold text-blue-700">--%</p>
+      </div>
+      <div class="bg-white shadow rounded-xl p-4 text-center">
+        <h3 class="text-sm text-gray-500">📡 Avg 4G Coverage</h3>
+        <p id="card-4g" class="text-2xl font-semibold text-green-600">--%</p>
+      </div>
+      <div class="bg-white shadow rounded-xl p-4 text-center">
+        <h3 class="text-sm text-gray-500">🔐 Countries with Cybersecurity Policy</h3>
+        <p id="card-cyber-policy" class="text-2xl font-semibold text-purple-600">--</p>
+      </div>
+      <div class="bg-white shadow rounded-xl p-4 text-center">
+        <h3 class="text-sm text-gray-500">🏛️ Avg E-Government Index</h3>
+        <p id="card-egov" class="text-2xl font-semibold text-yellow-600">--</p>
+      </div>
+      <div class="bg-white shadow rounded-xl p-4 text-center">
+        <h3 class="text-sm text-gray-500">💻 Avg Online Service Index</h3>
+        <p id="card-online" class="text-2xl font-semibold text-pink-600">--</p>
+      </div>
+    </section>
 
     <!-- Chart Section -->
     <section>
@@ -87,6 +108,25 @@
       "Papua New Guinea": [-6.314993, 143.9555],
       "Tuvalu": [-7.1095, 177.6493]
     };
+
+    function updateSummaryCards(data) {
+      const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+      const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+      const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
+      const cyberPolicyCount = new Set(
+        data.filter(d => (d["Cybersecurity Policy"] + "").trim().toLowerCase() === "yes")
+            .map(d => d["Country"]?.trim())
+      ).size;
+      const egovVals = data.map(d => parseFloat(d["E-Goverment Index"])).filter(v => !isNaN(v));
+      const onlineVals = data.map(d => parseFloat(d["Online service Index"])).filter(v => !isNaN(v));
+
+      document.getElementById("card-internet").innerText = avg(internetVals).toFixed(1) + "%";
+      document.getElementById("card-4g").innerText = avg(coverageVals).toFixed(1) + "%";
+      document.getElementById("card-cyber-policy").innerText = cyberPolicyCount;
+      document.getElementById("card-egov").innerText = avg(egovVals).toFixed(2);
+      document.getElementById("card-online").innerText = avg(onlineVals).toFixed(2);
+    }
 
     function drawChart(data) {
       const grouped = {};
@@ -165,51 +205,6 @@
             }
           }
         }
-      });
-    }
-
-    function updateSummaryCards(data) {
-      const regions = ["MELANESIA", "MICRONESIA", "POLYNESIA"];
-      const container = document.getElementById("summaryCards");
-      container.innerHTML = "";
-
-      const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-
-      regions.forEach(region => {
-        const regionData = data.filter(d => (d["CULTURAL REGION"] + "").trim().toUpperCase() === region);
-        const internetVals = regionData.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        const coverageVals = regionData.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-        const cyberPolicy = new Set(
-          regionData.filter(d => (d["Cybersecurity Policy"] + "").toLowerCase().trim() === "yes")
-                    .map(d => d["Country"])
-        ).size;
-        const egov = regionData.map(d => parseFloat(d["E-Goverment Index"])).filter(v => !isNaN(v));
-        const online = regionData.map(d => parseFloat(d["Online service Index"])).filter(v => !isNaN(v));
-
-        container.innerHTML += `
-          <h3 class="text-lg font-bold text-gray-700 mt-10 mb-2">${region}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="bg-white shadow rounded-xl p-4 text-center">
-              <h3 class="text-sm text-gray-500">🌐 Avg Internet Usage</h3>
-              <p class="text-2xl font-semibold text-blue-700">${avg(internetVals).toFixed(1)}%</p>
-            </div>
-            <div class="bg-white shadow rounded-xl p-4 text-center">
-              <h3 class="text-sm text-gray-500">📡 Avg 4G Coverage</h3>
-              <p class="text-2xl font-semibold text-green-600">${avg(coverageVals).toFixed(1)}%</p>
-            </div>
-            <div class="bg-white shadow rounded-xl p-4 text-center">
-              <h3 class="text-sm text-gray-500">🔐 Countries with Cyber Policy</h3>
-              <p class="text-2xl font-semibold text-purple-600">${cyberPolicy}</p>
-            </div>
-            <div class="bg-white shadow rounded-xl p-4 text-center">
-              <h3 class="text-sm text-gray-500">🏛️ Avg E-Gov Index</h3>
-              <p class="text-2xl font-semibold text-yellow-600">${avg(egov).toFixed(2)}</p>
-            </div>
-            <div class="bg-white shadow rounded-xl p-4 text-center">
-              <h3 class="text-sm text-gray-500">💻 Avg Online Service Index</h3>
-              <p class="text-2xl font-semibold text-pink-600">${avg(online).toFixed(2)}</p>
-            </div>
-          </div>`;
       });
     }
 
@@ -314,6 +309,7 @@
     }
   </script>
 
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
+  <!-- Replace with your actual API key -->
+  <script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap"></script>
 </body>
 </html>
