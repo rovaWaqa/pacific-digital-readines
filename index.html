@@ -2,321 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pacific Islands Digital Pulse</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <title>Pacific Digital Readiness Heatmap</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&libraries=visualization&callback=initMap">
+  </script>
   <style>
-    html { scroll-behavior: smooth; }
-
-    #internetMap {
-      height: 500px;
-      margin-top: 2rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .filter-btn.active {
-      background-color: #3B82F6;
-      color: white;
-    }
+    body { font-family: Arial, sans-serif; }
+    #map { height: 80vh; width: 100%; }
+    #status { padding: 10px; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
-
-  <header class="bg-blue-700 text-white py-6 text-center shadow w-full top-0 left-0 z-50">
-    <h1 class="text-3xl font-bold">🌐 Pacific Islands Digital Pulse</h1>
-    <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 pt-16 pb-16">
-
-    <!-- Summary Cards -->
-    <section class="flex flex-wrap justify-between gap-6 mb-10 max-w-7xl mx-auto px-4">
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-blue-400 via-cyan-300 to-teal-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">🌐 Avg Internet Usage</h3>
-    <p id="card-internet" class="text-4xl font-extrabold leading-none">--%</p>
-  </div>
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-green-400 via-emerald-300 to-lime-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">📡 Avg 4G Coverage</h3>
-    <p id="card-4g" class="text-4xl font-extrabold leading-none">--%</p>
-  </div>
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-yellow-400 via-amber-300 to-orange-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">🏛️ Avg E-Government Index</h3>
-    <p id="card-egov" class="text-4xl font-extrabold leading-none">--</p>
-  </div>
-  <div class="flex-1 min-w-[200px] bg-gradient-to-tr from-pink-400 via-fuchsia-300 to-purple-400 shadow-lg rounded-2xl p-6 text-center text-white font-sans">
-    <h3 class="text-sm uppercase tracking-widest mb-2 font-semibold">💻 Avg Online Service Index</h3>
-    <p id="card-online" class="text-4xl font-extrabold leading-none">--</p>
-  </div>
-</section>
-
-
-    <!-- Chart Section -->
-    <section>
-      <h2 class="text-xl font-bold text-blue-700 mb-2">📶 Avg Internet & 4G Coverage by Country</h2>
-      <div class="flex flex-wrap gap-2 mb-6">
-        <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
-        <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
-        <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
-      </div>
-      <div class="relative">
-        <canvas id="avgUsageCoverageChart" class="w-full max-w-full"></canvas>
-      </div>
-    </section>
-
-    <!-- Map Section -->
-    <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">🗺️ Internet Usage Map (Grey Styled)</h2>
-      <div class="flex flex-wrap gap-2 mb-6">
-        <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
-        <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
-        <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
-      </div>
-      <div id="internetMap"></div>
-    </section>
-
-  </main>
+<body>
+  <h2>🌴 Pacific Islands Digital Readiness</h2>
+  <div id="status">Loading Excel data and map...</div>
+  <div id="map"></div>
 
   <script>
-    const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
-    const selectedGraphRegions = new Set();
-    const selectedMapRegions = new Set();
-    let fullData = [];
-    let chartInstance = null;
-    let mapInstance = null;
-    let mapCircles = [];
-
-    const countryCoords = {
-      "Fiji": [-17.7134, 178.0650],
-      "New Caledonia": [-20.9043, 165.6180],
+    const coords = {
+      "Fiji": [-18.1248, 178.4501],
+      "Papua New Guinea": [-9.4438, 147.1803],
       "Solomon Islands": [-9.6457, 160.1562],
-      "Samoa": [-13.7590, -172.1046],
-      "Tonga": [-21.178986, -175.198242],
-      "Vanuatu": [-15.3767, 166.9592],
-      "Kiribati": [1.8709, -157.3626],
+      "Vanuatu": [-17.7333, 168.3273],
+      "New Caledonia": [-22.2558, 166.4505],
+      "Kiribati": [1.8709, 157.3600],
       "Marshall Islands": [7.1315, 171.1845],
-      "Micronesia (Federated States of)": [6.8875, 158.2151],
+      "Micronesia (Federated States of)": [7.4256, 150.5508],
       "Nauru": [-0.5228, 166.9315],
-      "Palau": [7.51498, 134.58252],
-      "Cook Islands": [-21.2367, -159.7777],
+      "Palau": [7.5000, 134.6243],
+      "Cook Islands": [-21.2129, -159.7823],
       "French Polynesia": [-17.6797, -149.4068],
       "Niue": [-19.0544, -169.8672],
-      "Papua New Guinea": [-6.314993, 143.9555],
+      "Samoa": [-13.7590, -172.1046],
+      "Tonga": [-21.1790, -175.1982],
       "Tuvalu": [-7.1095, 177.6493]
     };
 
-    function updateSummaryCards(data) {
-      const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-
-      const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-      const coverageVals = data.map(d => parseFloat(d["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-      // Removed Cybersecurity Policy count here
-      const egovVals = data.map(d => parseFloat(d[" E-Goverment Index"])).filter(v => !isNaN(v));
-      const onlineVals = data.map(d => parseFloat(d[" Online service Index"])).filter(v => !isNaN(v));
-
-      document.getElementById("card-internet").innerText = avg(internetVals).toFixed(1) + "%";
-      document.getElementById("card-4g").innerText = avg(coverageVals).toFixed(1) + "%";
-      document.getElementById("card-egov").innerText = avg(egovVals).toFixed(2);
-      document.getElementById("card-online").innerText = avg(onlineVals).toFixed(2);
-    }
-
-    function drawChart(data) {
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"]?.trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
+    async function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: { lat: -15.3767, lng: 166.9592 },
+        mapTypeId: "roadmap"
       });
 
-      const labels = [];
-      const internetData = [];
-      const coverageData = [];
+      const file = await fetch("Final Data.xlsx").then(r => r.arrayBuffer());
+      const workbook = XLSX.read(file, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
+      document.getElementById("status").textContent = "Processing data...";
 
-        labels.push(country);
-        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
-      }
+      const rows = data.slice(1).filter(r => r.length > 3); // Filter incomplete rows
+      const readiness = {};
 
-      const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
-      if (chartInstance) chartInstance.destroy();
+      rows.forEach(r => {
+        const country = r[1];
+        const year = r[2];
+        const indicators = r.slice(3).map(Number).filter(n => !isNaN(n));
+        const score = indicators.length ? indicators.reduce((a, b) => a + b, 0) / indicators.length : 0;
 
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Internet Usage (%)",
-              data: internetData,
-              backgroundColor: "rgba(59, 130, 246, 0.6)",
-              borderRadius: 5
-            },
-            {
-              label: "4G Coverage (%)",
-              data: coverageData,
-              type: 'line',
-              fill: false,
-              borderColor: "rgba(16, 185, 129, 1)",
-              backgroundColor: "rgba(16, 185, 129, 0.6)",
-              tension: 0.3,
-              pointRadius: 5,
-              pointHoverRadius: 7
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                boxWidth: 15,
-                padding: 10
-              }
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: context => `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: { display: true, text: "Percentage" }
-            }
-          }
-        }
-      });
-    }
-
-    function drawMap(data) {
-      if (!mapInstance) return;
-
-      mapCircles.forEach(circle => circle.setMap(null));
-      mapCircles = [];
-
-      const filtered = selectedMapRegions.size === 0
-        ? data
-        : data.filter(d => selectedMapRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
-
-      const grouped = {};
-      filtered.forEach(d => {
-        const country = d["Country"]?.trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
-
-      for (const country in grouped) {
-        const vals = grouped[country].map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        if (!vals.length) continue;
-        const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-        const coords = countryCoords[country];
-        if (!coords) continue;
-
-        const circle = new google.maps.Circle({
-          map: mapInstance,
-          center: { lat: coords[0], lng: coords[1] },
-          radius: Math.max(100000, avg * 6000),
-          fillColor: "rgba(59,130,246,0.4)",
-          fillOpacity: 0.5,
-          strokeColor: "#000",
-          strokeOpacity: 0.7,
-          strokeWeight: 1
-        });
-
-       const infoWindow = new google.maps.InfoWindow({
-      content: `<div style="margin:0;padding:4px;"><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`,
-      disableAutoPan: true
-      });
-
-      // Hide the close button on info window
-      google.maps.event.addListener(infoWindow, 'domready', () => {
-        const iwCloseBtn = document.querySelector('.gm-ui-hover-effect');
-        if (iwCloseBtn) iwCloseBtn.style.display = 'none';
-      });
-
-        circle.addListener("mouseover", () => {
-          infoWindow.setPosition(circle.getCenter());
-          infoWindow.open(mapInstance);
-        });
-
-        circle.addListener("mouseout", () => {
-          infoWindow.close();
-        });
-
-        mapCircles.push(circle);
-      }
-    }
-
-    function initMap() {
-      const styledMapType = new google.maps.StyledMapType([
-        {
-          featureType: "all",
-          elementType: "all",
-          stylers: [{ saturation: -100 }, { lightness: 40 }]
-        }
-      ], { name: "Light Grey" });
-
-      mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
-        zoom: 3,
-        center: { lat: 0, lng: 180 },
-        mapTypeControlOptions: {
-          mapTypeIds: ["styled_map", "roadmap"]
+        // Store highest score per country
+        if (!readiness[country] || readiness[country].score < score) {
+          readiness[country] = { score, indicators };
         }
       });
 
-      mapInstance.mapTypes.set("styled_map", styledMapType);
-      mapInstance.setMapTypeId("styled_map");
+      const heatmapData = Object.entries(readiness).map(([country, val]) => {
+        const [lat, lng] = coords[country] || [0, 0];
+        return new google.maps.LatLng(lat, lng) && {
+          location: new google.maps.LatLng(lat, lng),
+          weight: val.score
+        };
+      });
 
-      drawMap(fullData);
+      const heatmap = new google.maps.visualization.HeatmapLayer({
+        data: heatmapData,
+        radius: 40,
+        opacity: 0.7
+      });
+
+      heatmap.setMap(map);
+      document.getElementById("status").textContent = "✅ Ready! Hover the map to explore.";
     }
-
-    fetch(excelURL)
-      .then(r => r.arrayBuffer())
-      .then(data => {
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        fullData = XLSX.utils.sheet_to_json(sheet);
-        drawChart(fullData);
-        updateSummaryCards(fullData);
-        if (window.google && window.google.maps) initMap();
-      });
-
-    document.querySelectorAll(".graph-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedGraphRegions.has(region)) selectedGraphRegions.delete(region);
-        else selectedGraphRegions.add(region);
-        const filtered = selectedGraphRegions.size === 0
-          ? fullData
-          : fullData.filter(d => selectedGraphRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
-        drawChart(filtered);
-      });
-    });
-
-    document.querySelectorAll(".map-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedMapRegions.has(region)) selectedMapRegions.delete(region);
-        else selectedMapRegions.add(region);
-        drawMap(fullData);
-      });
-    });
   </script>
-
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
 </body>
 </html>
