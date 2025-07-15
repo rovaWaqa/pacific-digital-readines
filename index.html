@@ -35,15 +35,16 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 pt-32 pb-16">
+
     <!-- Chart Section -->
     <section>
       <h2 class="text-xl font-bold text-blue-700 mb-2">📶 Avg Internet & 4G Coverage by Country</h2>
 
-      <!-- Filter Buttons -->
+      <!-- Chart Filter Buttons -->
       <div class="flex flex-wrap gap-2 mb-6">
-        <button class="filter-btn border border-blue-500 text-sm px-3 py-1.5 rounded transition" data-region="MELANESIA">Melanesia</button>
-        <button class="filter-btn border border-blue-500 text-sm px-3 py-1.5 rounded transition" data-region="MICRONESIA">Micronesia</button>
-        <button class="filter-btn border border-blue-500 text-sm px-3 py-1.5 rounded transition" data-region="POLYNESIA">Polynesia</button>
+        <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="Melanesia">Melanesia</button>
+        <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="Micronesia">Micronesia</button>
+        <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="Polynesia">Polynesia</button>
       </div>
 
       <!-- Chart -->
@@ -54,14 +55,25 @@
 
     <!-- Map Section -->
     <section>
-      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-4">🗺️ Internet Usage Map (Google Maps)</h2>
+      <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">🗺️ Internet Usage Map (Google Maps)</h2>
+
+      <!-- Map Filter Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="Melanesia">Melanesia</button>
+        <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="Micronesia">Micronesia</button>
+        <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="Polynesia">Polynesia</button>
+      </div>
+
+      <!-- Map -->
       <div id="internetMap"></div>
     </section>
+
   </main>
 
   <script>
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
-    const selectedRegions = new Set();
+    const selectedGraphRegions = new Set();
+    const selectedMapRegions = new Set();
     let fullData = [];
     let chartInstance = null;
     let mapInstance = null;
@@ -166,29 +178,7 @@
       });
     }
 
-    function clearMapCircles() {
-      mapCircles.forEach(circle => circle.setMap(null));
-      mapCircles = [];
-    }
-
     function drawMap(data) {
-      const countryAvgs = {};
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"]?.trim();
-        if (!grouped[country]) grouped[country] = [];
-        grouped[country].push(d);
-      });
-
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        if (vals.length) {
-          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-          countryAvgs[country] = avg;
-        }
-      }
-
       if (!mapInstance) {
         const styledMapType = new google.maps.StyledMapType([
           {
@@ -210,7 +200,30 @@
         mapInstance.setMapTypeId("styled_map");
       }
 
-      clearMapCircles();
+      mapCircles.forEach(circle => circle.setMap(null));
+      mapCircles = [];
+
+      const filtered = selectedMapRegions.size === 0
+        ? data
+        : data.filter(d => selectedMapRegions.has(d["CULTURAL REGION"]?.trim()));
+
+      const countryAvgs = {};
+      const grouped = {};
+
+      filtered.forEach(d => {
+        const country = d["Country"]?.trim();
+        if (!grouped[country]) grouped[country] = [];
+        grouped[country].push(d);
+      });
+
+      for (const country in grouped) {
+        const rows = grouped[country];
+        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+        if (vals.length) {
+          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+          countryAvgs[country] = avg;
+        }
+      }
 
       for (const [country, avg] of Object.entries(countryAvgs)) {
         const coords = countryCoords[country];
@@ -248,11 +261,10 @@
     }
 
     function applyGraphFilter() {
-      let filteredData = fullData;
-      if (selectedRegions.size > 0) {
-        filteredData = fullData.filter(d => selectedRegions.has(d["CULTURAL REGION"]?.trim()));
-      }
-      drawChart(filteredData);
+      const filtered = selectedGraphRegions.size === 0
+        ? fullData
+        : fullData.filter(d => selectedGraphRegions.has(d["CULTURAL REGION"]?.trim()));
+      drawChart(filtered);
     }
 
     fetch(excelURL)
@@ -269,17 +281,31 @@
         alert("Error loading data.");
       });
 
-    document.querySelectorAll(".filter-btn").forEach(btn => {
+    // Graph filter buttons
+    document.querySelectorAll(".graph-filter").forEach(btn => {
       btn.addEventListener("click", () => {
         const region = btn.getAttribute("data-region");
-        if (selectedRegions.has(region)) {
-          selectedRegions.delete(region);
-          btn.classList.remove("active");
+        btn.classList.toggle("active");
+        if (selectedGraphRegions.has(region)) {
+          selectedGraphRegions.delete(region);
         } else {
-          selectedRegions.add(region);
-          btn.classList.add("active");
+          selectedGraphRegions.add(region);
         }
         applyGraphFilter();
+      });
+    });
+
+    // Map filter buttons
+    document.querySelectorAll(".map-filter").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const region = btn.getAttribute("data-region");
+        btn.classList.toggle("active");
+        if (selectedMapRegions.has(region)) {
+          selectedMapRegions.delete(region);
+        } else {
+          selectedMapRegions.add(region);
+        }
+        drawMap(fullData);
       });
     });
   </script>
