@@ -2,76 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Digital Readiness by Country</title>
+  <title>Pacific Digital Readiness Heatmap</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=visualization&callback=initMap">
+  </script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    th { background-color: #343a40; color: white; cursor: pointer; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    h2 { color: #333; }
+    body { font-family: Arial, sans-serif; }
+    #map { height: 80vh; width: 100%; }
+    #status { padding: 10px; }
   </style>
 </head>
 <body>
-  <h2>📋 Pacific Islands Digital Readiness Scores</h2>
-  <div id="status">Loading data from Excel...</div>
-  <table id="readinessTable">
-    <thead>
-      <tr>
-        <th onclick="sortTable(0)">Country</th>
-        <th onclick="sortTable(1)">Readiness Score</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2>🌴 Pacific Islands Digital Readiness</h2>
+  <div id="status">Loading Excel data and map...</div>
+  <div id="map"></div>
 
   <script>
-    async function loadExcel() {
-      const file = await fetch("Final Data.xlsx").then(res => res.arrayBuffer());
+    const coords = {
+      "Fiji": [-18.1248, 178.4501],
+      "Papua New Guinea": [-9.4438, 147.1803],
+      "Solomon Islands": [-9.6457, 160.1562],
+      "Vanuatu": [-17.7333, 168.3273],
+      "New Caledonia": [-22.2558, 166.4505],
+      "Kiribati": [1.8709, 157.3600],
+      "Marshall Islands": [7.1315, 171.1845],
+      "Micronesia (Federated States of)": [7.4256, 150.5508],
+      "Nauru": [-0.5228, 166.9315],
+      "Palau": [7.5000, 134.6243],
+      "Cook Islands": [-21.2129, -159.7823],
+      "French Polynesia": [-17.6797, -149.4068],
+      "Niue": [-19.0544, -169.8672],
+      "Samoa": [-13.7590, -172.1046],
+      "Tonga": [-21.1790, -175.1982],
+      "Tuvalu": [-7.1095, 177.6493]
+    };
+
+    async function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: { lat: -15.3767, lng: 166.9592 },
+        mapTypeId: "roadmap"
+      });
+
+      const file = await fetch("Final Data.xlsx").then(r => r.arrayBuffer());
       const workbook = XLSX.read(file, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      const rows = data.slice(1).filter(r => r.length > 3);
+      document.getElementById("status").textContent = "Processing data...";
+
+      const rows = data.slice(1).filter(r => r.length > 3); // Filter incomplete rows
       const readiness = {};
 
       rows.forEach(r => {
         const country = r[1];
+        const year = r[2];
         const indicators = r.slice(3).map(Number).filter(n => !isNaN(n));
         const score = indicators.length ? indicators.reduce((a, b) => a + b, 0) / indicators.length : 0;
-        if (!readiness[country] || readiness[country] < score) {
-          readiness[country] = score;
+
+        // Store highest score per country
+        if (!readiness[country] || readiness[country].score < score) {
+          readiness[country] = { score, indicators };
         }
       });
 
-      const tbody = document.querySelector("#readinessTable tbody");
-      Object.entries(readiness)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([country, score]) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `<td>${country}</td><td>${score.toFixed(2)}</td>`;
-          tbody.appendChild(row);
-        });
-
-      document.getElementById("status").textContent = "✅ Table loaded!";
-    }
-
-    function sortTable(colIndex) {
-      const table = document.getElementById("readinessTable");
-      const rows = Array.from(table.rows).slice(1);
-      const sorted = rows.sort((a, b) => {
-        const aVal = a.cells[colIndex].textContent;
-        const bVal = b.cells[colIndex].textContent;
-        return colIndex === 1
-          ? parseFloat(bVal) - parseFloat(aVal)
-          : aVal.localeCompare(bVal);
+      const heatmapData = Object.entries(readiness).map(([country, val]) => {
+        const [lat, lng] = coords[country] || [0, 0];
+        return new google.maps.LatLng(lat, lng) && {
+          location: new google.maps.LatLng(lat, lng),
+          weight: val.score
+        };
       });
-      const tbody = table.tBodies[0];
-      sorted.forEach(row => tbody.appendChild(row));
-    }
 
-    loadExcel();
+      const heatmap = new google.maps.visualization.HeatmapLayer({
+        data: heatmapData,
+        radius: 40,
+        opacity: 0.7
+      });
+
+      heatmap.setMap(map);
+      document.getElementById("status").textContent = "✅ Ready! Hover the map to explore.";
+    }
   </script>
 </body>
 </html>
