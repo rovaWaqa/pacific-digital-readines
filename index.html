@@ -39,30 +39,16 @@
     <p class="text-lg mt-2">Digital Indicators Across the Blue Pacific</p>
   </header>
 
-  <div class="floating-panel w-72">
-    <h2 class="text-lg font-semibold mb-2 text-blue-600 flex items-center gap-2">
-      <i data-feather="filter" class="w-4 h-4"></i> Filters
-    </h2>
-    <label class="block text-sm font-medium text-gray-700">Cultural Region</label>
-    <select id="regionFilter" class="w-full mt-1 mb-4 border-gray-300 rounded-md">
-      <option value="All">All Regions</option>
-      <option value="MELANESIA">Melanesia</option>
-      <option value="MICRONESIA">Micronesia</option>
-      <option value="POLYNESIA">Polynesia</option>
-    </select>
-    <button id="downloadBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm font-medium">
-      ⬇️ Download Excel
-    </button>
-  </div>
-
   <main class="max-w-6xl mx-auto px-4 py-16">
-    <!-- Other dashboard content remains the same -->
+    <section class="mb-12">
+      <h2 class="text-xl font-bold text-blue-700 mb-4">📊 Internet Usage by Country</h2>
+      <canvas id="internetChart"></canvas>
+    </section>
 
-    <!-- Google Map -->
-    <div class="mt-16">
+    <section>
       <h2 class="text-xl font-bold text-blue-700 mb-4">🗼️ Internet Usage Map (Google Maps)</h2>
       <div id="internetMap"></div>
-    </div>
+    </section>
   </main>
 
   <script>
@@ -100,7 +86,8 @@
 
       for (const country in grouped) {
         const rows = grouped[country];
-        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+        const vals = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"]))
+                         .filter(v => !isNaN(v));
         if (vals.length) {
           const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
           countryAvgs[country] = avg;
@@ -155,15 +142,56 @@
           circle.addListener('mouseout', () => {
             infoWindow.close();
           });
-        } else {
-          console.warn("Missing coordinates for:", country);
         }
       }
+    }
+
+    function drawInternetChart(data) {
+      const ctx = document.getElementById("internetChart").getContext("2d");
+      const grouped = {};
+      data.forEach(d => {
+        const country = d["Country"].trim();
+        if (!grouped[country]) grouped[country] = [];
+        grouped[country].push(d);
+      });
+
+      const labels = [];
+      const values = [];
+
+      for (const country in grouped) {
+        const vals = grouped[country].map(r => parseFloat(r["Proportion of individuals using the Internet"]))
+                                      .filter(v => !isNaN(v));
+        const avg = vals.length ? vals.reduce((a, b) => a + b) / vals.length : 0;
+        labels.push(country);
+        values.push(avg);
+      }
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Internet Usage (%)',
+            data: values,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
     }
 
     function initMap() {
       if (fullData.length > 0) {
         drawInternetMap(fullData);
+        drawInternetChart(fullData);
       } else {
         setTimeout(initMap, 500);
       }
@@ -177,7 +205,6 @@
     });
   </script>
 
-  <!-- Google Maps API -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
   </script>
