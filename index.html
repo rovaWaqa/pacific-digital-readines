@@ -234,16 +234,7 @@
       const internetData = [];
       const coverageData = [];
 
-     // for (const country in grouped) {
-       // const rows = grouped[country];
-       // const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-       // const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-       // labels.push(country);
-      //  internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-      //  coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
-     // }
-
-      const dataArr = [];
+     const dataArr = [];
 for (const country in grouped) {
   const rows = grouped[country];
   const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
@@ -256,7 +247,7 @@ for (const country in grouped) {
 }
 
 // Sort by internet usage descending
-dataArr.sort((a, b) => b.internet - a.internet);
+dataArr.sort((a, b) => b.coverage - a.coverage);
 
 // Fill labels and data arrays based on sorted data
 dataArr.forEach(item => {
