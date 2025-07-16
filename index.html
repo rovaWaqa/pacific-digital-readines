@@ -194,6 +194,8 @@
         return `rgb(${red},${green},220)`;
       };
 
+      allAverages.sort((a, b) => a.country.localeCompare(b.country));
+
       allAverages.forEach(row => {
         const tr = document.createElement("tr");
         tr.innerHTML = `<td class="border px-4 py-2 font-medium">${row.country}</td>` +
