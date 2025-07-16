@@ -104,7 +104,10 @@
           content: `<div style='padding:4px;'><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`
         });
 
-        circle.addListener("mouseover", () => info.open(mapInstance, circle));
+        circle.addListener("mouseover", () => {
+          info.setPosition(circle.getCenter());
+          info.open(mapInstance);
+        });
         circle.addListener("mouseout", () => info.close());
 
         mapCircles.push(circle);
@@ -144,7 +147,10 @@
           content: `<div style='padding:4px;'><strong>${country}</strong><br>4G Coverage: ${avg.toFixed(1)}%</div>`
         });
 
-        circle.addListener("mouseover", () => info.open(mapInstance2, circle));
+        circle.addListener("mouseover", () => {
+          info.setPosition(circle.getCenter());
+          info.open(mapInstance2);
+        });
         circle.addListener("mouseout", () => info.close());
 
         mapCircles2.push(circle);
