@@ -32,11 +32,12 @@
 
   <main class="max-w-7xl mx-auto px-4 pt-16 pb-16">
 
-    <!-- Card Filters -->
-    <section class="flex flex-wrap gap-2 mb-4 justify-center">
-      <button class="filter-btn card-filter border border-pink-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
-      <button class="filter-btn card-filter border border-pink-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
-      <button class="filter-btn card-filter border border-pink-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
+    <!-- Card Filters by Country -->
+    <section class="mb-6 text-center">
+      <label class="block mb-2 font-medium text-blue-700">📍 Filter Summary by Country</label>
+      <select id="card-country-select" class="text-sm px-4 py-2 border border-blue-500 rounded shadow">
+        <option value="ALL">🌐 All Countries</option>
+      </select>
     </section>
 
     <!-- Summary Cards -->
@@ -89,7 +90,6 @@
     const excelURL = 'https://raw.githubusercontent.com/rovawaqa/pacific-digital-readines/main/Final%20Data.xlsx';
     const selectedGraphRegions = new Set();
     const selectedMapRegions = new Set();
-    const selectedCardRegions = new Set();
     let fullData = [];
     let chartInstance = null;
     let mapInstance = null;
@@ -180,10 +180,7 @@
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { boxWidth: 15, padding: 10 }
-            },
+            legend: { position: 'bottom', labels: { boxWidth: 15, padding: 10 } },
             tooltip: {
               mode: 'index',
               intersect: false,
@@ -196,6 +193,26 @@
             y: { beginAtZero: true, max: 100, title: { display: true, text: "Percentage" } }
           }
         }
+      });
+    }
+
+    function populateCountryDropdown(data) {
+      const countrySet = new Set(data.map(d => d["Country"]?.trim()).filter(Boolean));
+      const select = document.getElementById("card-country-select");
+
+      [...countrySet].sort().forEach(country => {
+        const option = document.createElement("option");
+        option.value = country;
+        option.textContent = country;
+        select.appendChild(option);
+      });
+
+      select.addEventListener("change", () => {
+        const selected = select.value;
+        const filtered = selected === "ALL"
+          ? fullData
+          : fullData.filter(d => d["Country"]?.trim() === selected);
+        updateSummaryCards(filtered);
       });
     }
 
@@ -284,6 +301,7 @@
         fullData = XLSX.utils.sheet_to_json(sheet);
         drawChart(fullData);
         updateSummaryCards(fullData);
+        populateCountryDropdown(fullData);
         if (window.google && window.google.maps) initMap();
       });
 
@@ -309,23 +327,8 @@
         drawMap(fullData);
       });
     });
-
-    document.querySelectorAll(".card-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedCardRegions.has(region)) selectedCardRegions.delete(region);
-        else selectedCardRegions.add(region);
-
-        const filtered = selectedCardRegions.size === 0
-          ? fullData
-          : fullData.filter(d => selectedCardRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
-
-        updateSummaryCards(filtered);
-      });
-    });
   </script>
 
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
+  <script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 </body>
 </html>
