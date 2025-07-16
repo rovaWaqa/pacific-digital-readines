@@ -234,14 +234,27 @@
       const internetData = [];
       const coverageData = [];
 
-      for (const country in grouped) {
-        const rows = grouped[country];
-        const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
-        const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
-        labels.push(country);
-        internetData.push(avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0);
-        coverageData.push(avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0);
-      }
+     const dataArr = [];
+for (const country in grouped) {
+  const rows = grouped[country];
+  const avgInternet = rows.map(r => parseFloat(r["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
+  const avg4G = rows.map(r => parseFloat(r["Proportion of population covered by at least a 4G mobile"])).filter(v => !isNaN(v));
+  dataArr.push({
+    country,
+    internet: avgInternet.length ? avgInternet.reduce((a, b) => a + b) / avgInternet.length : 0,
+    coverage: avg4G.length ? avg4G.reduce((a, b) => a + b) / avg4G.length : 0
+  });
+}
+
+// Sort by internet usage descending
+dataArr.sort((a, b) => b.internet - a.internet);
+
+// Fill labels and data arrays based on sorted data
+dataArr.forEach(item => {
+  labels.push(item.country);
+  internetData.push(item.internet);
+  coverageData.push(item.coverage);
+});
 
       const ctx = document.getElementById("avgUsageCoverageChart").getContext("2d");
       if (chartInstance) chartInstance.destroy();
@@ -398,14 +411,14 @@
       ], { name: "Light Grey" });
 
       mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
-        zoom: 3, center: { lat: 0, lng: 180 },
+        zoom: 4, center: { lat: -5, lng: 180 },
         mapTypeControlOptions: { mapTypeIds: ["styled_map", "roadmap"] }
       });
       mapInstance.mapTypes.set("styled_map", styledMap);
       mapInstance.setMapTypeId("styled_map");
 
       mapInstance2 = new google.maps.Map(document.getElementById("coverageMap"), {
-        zoom: 3, center: { lat: 0, lng: 180 },
+        zoom: 4, center: { lat: -5, lng: 180 },
         mapTypeControlOptions: { mapTypeIds: ["styled_map", "roadmap"] }
       });
       mapInstance2.mapTypes.set("styled_map", styledMap);
