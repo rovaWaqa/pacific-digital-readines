@@ -94,6 +94,27 @@
       <div id="coverageMap"></div>
     </section>
 
+      <!-- Heat Table Section -->
+    <section class="mt-16">
+      <h2 class="text-xl font-bold text-blue-700 mb-4">🔥 Heat Table by Country</h2>
+      <div class="overflow-x-auto">
+        <table id="heatTable" class="min-w-full text-sm border-collapse border border-gray-300">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="border border-gray-300 px-4 py-2 text-left">Country</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">Internet Usage (%)</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">4G Coverage (%)</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">E-Gov Index</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">Online Service Index</th>
+            </tr>
+          </thead>
+          <tbody id="heatTableBody">
+            <tr><td colspan="5" class="text-center py-4">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <!-- JavaScript Logic -->
@@ -128,6 +149,65 @@
       "Tuvalu": [-7.1095, 177.6493]
     };
 
+    
+    function generateHeatTable(data) {
+      const tbody = document.getElementById("heatTableBody");
+      tbody.innerHTML = "";
+
+      const grouped = {};
+      data.forEach(d => {
+        const country = d["Country"]?.trim();
+        if (country) {
+          if (!grouped[country]) grouped[country] = [];
+          grouped[country].push(d);
+        }
+      });
+
+      const getAvg = (arr, key) => {
+        const vals = arr.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
+        return vals.length ? (vals.reduce((a,b) => a+b) / vals.length) : null;
+      };
+
+      const indicators = [
+        { key: "Proportion of individuals using the Internet", label: "Internet Usage (%)", range: [0, 100] },
+        { key: "Proportion of population covered by at least a 4G mobile", label: "4G Coverage (%)", range: [0, 100] },
+        { key: " E-Goverment Index", label: "E-Gov Index", range: [0, 1] },
+        { key: " Online service Index", label: "Online Service Index", range: [0, 1] }
+      ];
+
+      const allAverages = [];
+
+      for (const country in grouped) {
+        const rowData = { country };
+        indicators.forEach(ind => {
+          const avg = getAvg(grouped[country], ind.key);
+          rowData[ind.key] = avg;
+        });
+        allAverages.push(rowData);
+      }
+
+      const getColor = (value, min = 0, max = 100) => {
+        if (value == null) return "#f9fafb";
+        const intensity = (value - min) / (max - min);
+        const red = 255 - Math.round(intensity * 120);
+        const green = 255 - Math.round((1 - intensity) * 120);
+        return `rgb(${red},${green},220)`;
+      };
+
+      allAverages.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="border px-4 py-2 font-medium">${row.country}</td>` +
+          indicators.map(ind => {
+            const val = row[ind.key];
+            const [min, max] = ind.range;
+            const color = getColor(val, min, max);
+            return `<td class="border px-4 py-2 text-center" style="background-color: ${color}">${val != null ? val.toFixed(2) : "-"}</td>`;
+          }).join("");
+        tbody.appendChild(tr);
+      });
+    }
+
+    
     function updateSummaryCards(data) {
       const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
       const internetVals = data.map(d => parseFloat(d["Proportion of individuals using the Internet"])).filter(v => !isNaN(v));
@@ -342,6 +422,7 @@
         drawChart(fullData);
         updateSummaryCards(fullData);
         populateCountryDropdown(fullData);
+        generateHeatTable(fullData);
         if (window.google && window.google.maps) initMap();
       });
 
