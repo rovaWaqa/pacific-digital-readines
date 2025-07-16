@@ -411,14 +411,14 @@ dataArr.forEach(item => {
       ], { name: "Light Grey" });
 
       mapInstance = new google.maps.Map(document.getElementById("internetMap"), {
-        zoom: 4, center: { lat: 10, lng: 180 },
+        zoom: 4, center: { lat: -10, lng: 180 },
         mapTypeControlOptions: { mapTypeIds: ["styled_map", "roadmap"] }
       });
       mapInstance.mapTypes.set("styled_map", styledMap);
       mapInstance.setMapTypeId("styled_map");
 
       mapInstance2 = new google.maps.Map(document.getElementById("coverageMap"), {
-        zoom: 4, center: { lat: 0, lng: 180 },
+        zoom: 4, center: { lat: -5, lng: 180 },
         mapTypeControlOptions: { mapTypeIds: ["styled_map", "roadmap"] }
       });
       mapInstance2.mapTypes.set("styled_map", styledMap);
