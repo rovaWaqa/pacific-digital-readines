@@ -19,6 +19,7 @@
       background-color: #3B82F6;
       color: white;
     }
+    .gm-ui-hover-effect { display: none !important; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -101,7 +102,8 @@
         });
 
         const info = new google.maps.InfoWindow({
-          content: `<div style='padding:4px;'><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`
+          content: `<div style='padding:4px;'><strong>${country}</strong><br>Internet Usage: ${avg.toFixed(1)}%</div>`,
+          disableAutoPan: true
         });
 
         circle.addListener("mouseover", () => {
@@ -144,7 +146,8 @@
         });
 
         const info = new google.maps.InfoWindow({
-          content: `<div style='padding:4px;'><strong>${country}</strong><br>4G Coverage: ${avg.toFixed(1)}%</div>`
+          content: `<div style='padding:4px;'><strong>${country}</strong><br>4G Coverage: ${avg.toFixed(1)}%</div>`,
+          disableAutoPan: true
         });
 
         circle.addListener("mouseover", () => {
