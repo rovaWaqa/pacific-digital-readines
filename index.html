@@ -247,7 +247,7 @@ for (const country in grouped) {
 }
 
 // Sort by internet usage descending
-dataArr.sort((a, b) => b.coverage - a.coverage);
+dataArr.sort((a, b) => b.internet - a.internet);
 
 // Fill labels and data arrays based on sorted data
 dataArr.forEach(item => {
