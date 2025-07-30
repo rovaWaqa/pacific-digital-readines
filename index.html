@@ -20,6 +20,12 @@
       color: white;
     }
     .gm-ui-hover-effect { display: none !important; }
+
+    canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -80,9 +86,9 @@
         <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
         <button class="filter-btn graph-filter border border-blue-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
       </div>
-      <div class="relative">
-        <canvas id="avgUsageCoverageChart" class="w-full max-w-full"></canvas>
-      </div>
+      <div class="relative w-full h-[500px]">
+  <canvas id="avgUsageCoverageChart"></canvas>
+</div>
     </section>
 
     <!-- Internet Usage Map Section -->
@@ -343,6 +349,7 @@ dataArr.forEach(item => {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: { position: 'bottom' },
             tooltip: {
