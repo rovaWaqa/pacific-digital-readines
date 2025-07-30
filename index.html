@@ -508,17 +508,29 @@ dataArr.forEach(item => {
       });
 
     document.querySelectorAll(".graph-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedGraphRegions.has(region)) selectedGraphRegions.delete(region);
-        else selectedGraphRegions.add(region);
-        const filtered = selectedGraphRegions.size === 0
-          ? fullData
-          : fullData.filter(d => selectedGraphRegions.has(d["CULTURAL REGION"]?.trim().toUpperCase()));
-        drawChart(filtered);
-      });
+  btn.addEventListener("click", () => {
+    const region = btn.getAttribute("data-region");
+
+    // Remove active state from all buttons
+    document.querySelectorAll(".graph-filter").forEach(b => {
+      b.classList.remove("active", "bg-green-500", "text-white");
     });
+
+    // Add active state to the clicked button
+    btn.classList.add("active", "bg-green-500", "text-white");
+
+    // Update chart based on selection
+    if (region === "ALL") {
+      drawChart(fullData); // Show all data
+    } else {
+      const filtered = fullData.filter(
+        d => d["CULTURAL REGION"]?.trim().toUpperCase() === region
+      );
+      drawChart(filtered);
+    }
+  });
+});
+
 
     document.querySelectorAll(".map-filter").forEach(btn => {
       btn.addEventListener("click", () => {
