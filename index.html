@@ -533,25 +533,56 @@ dataArr.forEach(item => {
 });
 
 
-    document.querySelectorAll(".map-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedMapRegions.has(region)) selectedMapRegions.delete(region);
-        else selectedMapRegions.add(region);
-        drawMap(fullData);
-      });
-    });
+    // Single selection for map filter (with "All" option)
+document.querySelectorAll(".map-filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const region = btn.getAttribute("data-region");
 
-    document.querySelectorAll(".coverage-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedCoverageRegions.has(region)) selectedCoverageRegions.delete(region);
-        else selectedCoverageRegions.add(region);
-        draw4GMap(fullData);
-      });
-    });
+    // Remove active class from all buttons
+    document.querySelectorAll(".map-filter").forEach(b =>
+      b.classList.remove("active", "bg-green-500", "text-white")
+    );
+
+    // Add active class to clicked button
+    btn.classList.add("active", "bg-green-500", "text-white");
+
+    // Update selectedMapRegions and draw
+    if (region === "ALL") {
+      selectedMapRegions.clear();
+      drawMap(fullData); // Show all regions
+    } else {
+      selectedMapRegions.clear();
+      selectedMapRegions.add(region);
+      drawMap(fullData); // Let drawMap use the selectedMapRegions
+    }
+  });
+});
+
+// Single selection for coverage filter (with "All" option)
+document.querySelectorAll(".coverage-filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const region = btn.getAttribute("data-region");
+
+    // Remove active class from all buttons
+    document.querySelectorAll(".coverage-filter").forEach(b =>
+      b.classList.remove("active", "bg-green-500", "text-white")
+    );
+
+    // Add active class to clicked button
+    btn.classList.add("active", "bg-green-500", "text-white");
+
+    // Update selectedCoverageRegions and draw
+    if (region === "ALL") {
+      selectedCoverageRegions.clear();
+      draw4GMap(fullData); // Show all regions
+    } else {
+      selectedCoverageRegions.clear();
+      selectedCoverageRegions.add(region);
+      draw4GMap(fullData); // Let draw4GMap use the selectedCoverageRegions
+    }
+  });
+});
+
   </script>
 
   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
