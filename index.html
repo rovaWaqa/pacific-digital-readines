@@ -565,25 +565,27 @@ document.querySelectorAll(".coverage-filter").forEach(btn => {
   btn.addEventListener("click", () => {
     const region = btn.getAttribute("data-region");
 
-    // Remove active class from all buttons
+    // Clear selectedCoverageRegions
+    selectedCoverageRegions.clear();
+
+    // Remove active state from all buttons
     document.querySelectorAll(".coverage-filter").forEach(b =>
       b.classList.remove("active", "bg-green-500", "text-white")
     );
 
-    // Add active class to clicked button
+    // Add active state to the clicked button
     btn.classList.add("active", "bg-green-500", "text-white");
 
-    // Update selectedCoverageRegions and draw
-    if (region === "ALL") {
-      selectedCoverageRegions.clear();
-      draw4GMap(fullData); // Show all regions
-    } else {
-      selectedCoverageRegions.clear();
+    // Apply logic based on selected region
+    if (region !== "ALL") {
       selectedCoverageRegions.add(region);
-      draw4GMap(fullData); // Let draw4GMap use the selectedCoverageRegions
     }
+
+    // Redraw map with appropriate filter
+    draw4GMap(fullData);
   });
 });
+
 
   </script>
 
