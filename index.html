@@ -153,20 +153,17 @@
        <section class="mt-16">
       <h2 class="text-xl font-bold text-blue-700 mb-4">Heat Table by Country</h2>
      <div class="overflow-auto rounded-xl shadow">
-        <table id="heatTable" class="min-w-full text-sm border-collapse border border-gray-300">
-          <thead class="bg-gray-200">
-            <tr>
-              <th class="border border-gray-300 px-4 py-2 text-left">Country</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">Internet Usage (%)</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">4G Coverage (%)</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">E-Gov Index</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">Online Service Index</th>
-            </tr>
-          </thead>
-          <tbody id="heatTableBody">
-            <tr><td colspan="5" class="text-center py-4">Loading data...</td></tr>
-          </tbody>
-        </table>
+        <table class="table-auto w-full border-collapse border mt-4">
+  <thead>
+    <tr id="heatTableHeader" class="bg-gray-100 text-sm text-left cursor-pointer">
+      <!-- Dynamic headers will be injected here -->
+    </tr>
+  </thead>
+  <tbody id="heatTableBody">
+    <!-- Dynamic rows will be injected here -->
+  </tbody>
+</table>
+
       </div>
     </section>
 
@@ -263,9 +260,11 @@
     };
 
     
-   function generateHeatTable(data) {
+    function generateHeatTable(data) {
   const tbody = document.getElementById("heatTableBody");
+  const thead = document.getElementById("heatTableHeader");
   tbody.innerHTML = "";
+  thead.innerHTML = "";
 
   const grouped = {};
   data.forEach(d => {
@@ -278,7 +277,7 @@
 
   const getAvg = (arr, key) => {
     const vals = arr.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
-    return vals.length ? (vals.reduce((a,b) => a+b) / vals.length) : null;
+    return vals.length ? (vals.reduce((a, b) => a + b) / vals.length) : null;
   };
 
   const indicators = [
@@ -300,35 +299,72 @@
   }
 
   const getColor = (value, min = 0, max = 100) => {
-    if (value == null) return "#f9fafb"; // light gray for missing data
+    if (value == null) return "#f9fafb";
     const intensity = (value - min) / (max - min);
-    const hue = 120 * intensity; // green (good) to red (poor)
-    return `hsl(${hue}, 70%, 85%)`;
+    const red = 255 - Math.round(intensity * 120);
+    const green = 255 - Math.round((1 - intensity) * 120);
+    return `rgb(${red},${green},220)`;
   };
 
-  allAverages.sort((a, b) => a.country.localeCompare(b.country));
+  // Sort state tracker
+  let currentSort = { key: null, direction: 1 };
 
-  allAverages.forEach(row => {
-    const tr = document.createElement("tr");
+  // Build table headers with sort icons
+  thead.innerHTML = `
+    <th class="border px-4 py-2">Country</th>` +
+    indicators.map(ind => `
+      <th class="border px-4 py-2 hover:bg-gray-200" data-key="${ind.key}">
+        ${ind.label}
+        <span class="inline-block ml-1 text-gray-400">⇅</span>
+      </th>`).join("");
 
-    // Country name
-    tr.innerHTML = `<td class="border px-4 py-2 font-medium">${row.country}</td>` +
-      indicators.map(ind => {
-        const val = row[ind.key];
-        const [min, max] = ind.range;
-        const color = getColor(val, min, max);
-        return `<td 
-                  class="border px-4 py-2 text-center text-sm" 
-                  style="background-color: ${color}" 
-                  title="${ind.label}: ${val != null ? val.toFixed(2) : 'No data'}"
-                >
-                  ${val != null ? val.toFixed(2) : "-"}
-                </td>`;
-      }).join("");
+  // Handle sort on column header click
+  thead.querySelectorAll("th[data-key]").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.getAttribute("data-key");
+      if (currentSort.key === key) {
+        currentSort.direction *= -1; // Toggle
+      } else {
+        currentSort.key = key;
+        currentSort.direction = 1;
+      }
 
-    tbody.appendChild(tr);
+      allAverages.sort((a, b) => {
+        const aVal = a[key] ?? -Infinity;
+        const bVal = b[key] ?? -Infinity;
+        return currentSort.direction * ((aVal > bVal) - (aVal < bVal));
+      });
+
+      drawRows();
+    });
   });
+
+  function drawRows() {
+    tbody.innerHTML = "";
+    allAverages.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td class="border px-4 py-2 font-medium">${row.country}</td>` +
+        indicators.map(ind => {
+          const val = row[ind.key];
+          const [min, max] = ind.range;
+          const color = getColor(val, min, max);
+          return `<td 
+                    class="border px-4 py-2 text-center text-sm" 
+                    style="background-color: ${color}" 
+                    title="${ind.label}: ${val != null ? val.toFixed(2) : 'No data'}"
+                  >
+                    ${val != null ? val.toFixed(2) : "-"}
+                  </td>`;
+        }).join("");
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Initial alphabetical sort by country
+  allAverages.sort((a, b) => a.country.localeCompare(b.country));
+  drawRows();
 }
+
 
     
     function updateSummaryCards(data) {
