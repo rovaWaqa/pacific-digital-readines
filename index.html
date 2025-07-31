@@ -96,6 +96,7 @@
     <section>
       <h2 class="text-xl font-bold text-blue-700 mt-16 mb-2">Internet Usage Map (Grey Styled)</h2>
       <div class="flex flex-wrap gap-2 mb-6">
+         <button class="map-filter border border-green-500 text-sm px-3 py-1.5 rounded bg-green-500 text-white" data-region="ALL">All</button>
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
         <button class="filter-btn map-filter border border-green-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
@@ -107,6 +108,7 @@
     <section>
       <h2 class="text-xl font-bold text-green-700 mt-16 mb-2">4G Mobile Coverage Map</h2>
       <div class="flex flex-wrap gap-2 mb-6">
+        <button class="coverage-filter border border-green-500 text-sm px-3 py-1.5 rounded bg-green-500 text-white" data-region="ALL">All</button> 
         <button class="filter-btn coverage-filter border border-emerald-500 text-sm px-3 py-1.5 rounded" data-region="MELANESIA">Melanesia</button>
         <button class="filter-btn coverage-filter border border-emerald-500 text-sm px-3 py-1.5 rounded" data-region="MICRONESIA">Micronesia</button>
         <button class="filter-btn coverage-filter border border-emerald-500 text-sm px-3 py-1.5 rounded" data-region="POLYNESIA">Polynesia</button>
@@ -533,25 +535,58 @@ dataArr.forEach(item => {
 });
 
 
-    document.querySelectorAll(".map-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedMapRegions.has(region)) selectedMapRegions.delete(region);
-        else selectedMapRegions.add(region);
-        drawMap(fullData);
-      });
-    });
+    // Single selection for map filter (with "All" option)
+document.querySelectorAll(".map-filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const region = btn.getAttribute("data-region");
 
-    document.querySelectorAll(".coverage-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.getAttribute("data-region");
-        btn.classList.toggle("active");
-        if (selectedCoverageRegions.has(region)) selectedCoverageRegions.delete(region);
-        else selectedCoverageRegions.add(region);
-        draw4GMap(fullData);
-      });
-    });
+    // Remove active class from all buttons
+    document.querySelectorAll(".map-filter").forEach(b =>
+      b.classList.remove("active", "bg-green-500", "text-white")
+    );
+
+    // Add active class to clicked button
+    btn.classList.add("active", "bg-green-500", "text-white");
+
+    // Update selectedMapRegions and draw
+    if (region === "ALL") {
+      selectedMapRegions.clear();
+      drawMap(fullData); // Show all regions
+    } else {
+      selectedMapRegions.clear();
+      selectedMapRegions.add(region);
+      drawMap(fullData); // Let drawMap use the selectedMapRegions
+    }
+  });
+});
+
+// Single selection for coverage filter (with "All" option)
+document.querySelectorAll(".coverage-filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const region = btn.getAttribute("data-region");
+
+    // Clear selectedCoverageRegions
+    selectedCoverageRegions.clear();
+
+    // Remove active state from all buttons
+    document.querySelectorAll(".coverage-filter").forEach(b =>
+      b.classList.remove("active", "bg-green-500", "text-white")
+    );
+
+    // Add active state to the clicked button
+    btn.classList.add("active", "bg-green-500", "text-white");
+
+    // Apply logic based on selected region
+    if (region !== "ALL") {
+      selectedCoverageRegions.add(region);
+    }
+
+    // Redraw map with appropriate filter
+    draw4GMap(fullData);
+  });
+});
+
+
   </script>
 
   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6mJuS3MmMYgj8rSr3B84S3V_KUUMTLzQ&callback=initMap"></script>
