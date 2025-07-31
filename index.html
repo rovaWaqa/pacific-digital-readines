@@ -269,7 +269,7 @@
     };
 
     
-    function generateHeatTable(data) {
+function generateHeatTable(data) {
   const tbody = document.getElementById("heatTableBody");
   const thead = document.getElementById("heatTableHeader");
   tbody.innerHTML = "";
@@ -293,7 +293,8 @@
     { key: "Proportion of individuals using the Internet", label: "Internet Usage (%)", range: [0, 100] },
     { key: "Proportion of population covered by at least a 4G mobile", label: "4G Coverage (%)", range: [0, 100] },
     { key: " E-Goverment Index", label: "E-Gov Index", range: [0, 1] },
-    { key: " Online service Index", label: "Online Service Index", range: [0, 1] }
+    { key: " Online service Index", label: "Online Service Index", range: [0, 1] },
+    { key: "Fixed Internet broadband subscriptions per 100 inhabitants", label: "Fixed Broadband Subs (per 100)", range: [0, 100] }
   ];
 
   const allAverages = [];
@@ -322,7 +323,7 @@
   thead.innerHTML = `
     <th class="border px-4 py-2">Country</th>` +
     indicators.map(ind => `
-      <th class="border px-4 py-2 hover:bg-gray-200" data-key="${ind.key}">
+      <th class="border px-4 py-2 hover:bg-gray-200 cursor-pointer" data-key="${ind.key}">
         ${ind.label}
         <span class="inline-block ml-1 text-gray-400">⇅</span>
       </th>`).join("");
@@ -332,7 +333,7 @@
     th.addEventListener("click", () => {
       const key = th.getAttribute("data-key");
       if (currentSort.key === key) {
-        currentSort.direction *= -1; // Toggle
+        currentSort.direction *= -1; // Toggle ascending/descending
       } else {
         currentSort.key = key;
         currentSort.direction = 1;
@@ -373,6 +374,7 @@
   allAverages.sort((a, b) => a.country.localeCompare(b.country));
   drawRows();
 }
+
 
 
     
