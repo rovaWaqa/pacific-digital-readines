@@ -251,64 +251,72 @@
     };
 
     
-    function generateHeatTable(data) {
-      const tbody = document.getElementById("heatTableBody");
-      tbody.innerHTML = "";
+   function generateHeatTable(data) {
+  const tbody = document.getElementById("heatTableBody");
+  tbody.innerHTML = "";
 
-      const grouped = {};
-      data.forEach(d => {
-        const country = d["Country"]?.trim();
-        if (country) {
-          if (!grouped[country]) grouped[country] = [];
-          grouped[country].push(d);
-        }
-      });
-
-      const getAvg = (arr, key) => {
-        const vals = arr.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
-        return vals.length ? (vals.reduce((a,b) => a+b) / vals.length) : null;
-      };
-
-      const indicators = [
-        { key: "Proportion of individuals using the Internet", label: "Internet Usage (%)", range: [0, 100] },
-        { key: "Proportion of population covered by at least a 4G mobile", label: "4G Coverage (%)", range: [0, 100] },
-        { key: " E-Goverment Index", label: "E-Gov Index", range: [0, 1] },
-        { key: " Online service Index", label: "Online Service Index", range: [0, 1] }
-      ];
-
-      const allAverages = [];
-
-      for (const country in grouped) {
-        const rowData = { country };
-        indicators.forEach(ind => {
-          const avg = getAvg(grouped[country], ind.key);
-          rowData[ind.key] = avg;
-        });
-        allAverages.push(rowData);
-      }
-
-      const getColor = (value, min = 0, max = 100) => {
-        if (value == null) return "#f9fafb";
-        const intensity = (value - min) / (max - min);
-        const red = 255 - Math.round(intensity * 120);
-        const green = 255 - Math.round((1 - intensity) * 120);
-        return `rgb(${red},${green},220)`;
-      };
-
-      allAverages.sort((a, b) => a.country.localeCompare(b.country));
-
-      allAverages.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td class="border px-4 py-2 font-medium">${row.country}</td>` +
-          indicators.map(ind => {
-            const val = row[ind.key];
-            const [min, max] = ind.range;
-            const color = getColor(val, min, max);
-            return `<td class="border px-4 py-2 text-center" style="background-color: ${color}">${val != null ? val.toFixed(2) : "-"}</td>`;
-          }).join("");
-        tbody.appendChild(tr);
-      });
+  const grouped = {};
+  data.forEach(d => {
+    const country = d["Country"]?.trim();
+    if (country) {
+      if (!grouped[country]) grouped[country] = [];
+      grouped[country].push(d);
     }
+  });
+
+  const getAvg = (arr, key) => {
+    const vals = arr.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
+    return vals.length ? (vals.reduce((a,b) => a+b) / vals.length) : null;
+  };
+
+  const indicators = [
+    { key: "Proportion of individuals using the Internet", label: "Internet Usage (%)", range: [0, 100] },
+    { key: "Proportion of population covered by at least a 4G mobile", label: "4G Coverage (%)", range: [0, 100] },
+    { key: " E-Goverment Index", label: "E-Gov Index", range: [0, 1] },
+    { key: " Online service Index", label: "Online Service Index", range: [0, 1] }
+  ];
+
+  const allAverages = [];
+
+  for (const country in grouped) {
+    const rowData = { country };
+    indicators.forEach(ind => {
+      const avg = getAvg(grouped[country], ind.key);
+      rowData[ind.key] = avg;
+    });
+    allAverages.push(rowData);
+  }
+
+  const getColor = (value, min = 0, max = 100) => {
+    if (value == null) return "#f9fafb"; // light gray for missing data
+    const intensity = (value - min) / (max - min);
+    const hue = 120 * intensity; // green (good) to red (poor)
+    return `hsl(${hue}, 70%, 85%)`;
+  };
+
+  allAverages.sort((a, b) => a.country.localeCompare(b.country));
+
+  allAverages.forEach(row => {
+    const tr = document.createElement("tr");
+
+    // Country name
+    tr.innerHTML = `<td class="border px-4 py-2 font-medium">${row.country}</td>` +
+      indicators.map(ind => {
+        const val = row[ind.key];
+        const [min, max] = ind.range;
+        const color = getColor(val, min, max);
+        return `<td 
+                  class="border px-4 py-2 text-center text-sm" 
+                  style="background-color: ${color}" 
+                  title="${ind.label}: ${val != null ? val.toFixed(2) : 'No data'}"
+                >
+                  ${val != null ? val.toFixed(2) : "-"}
+                </td>`;
+      }).join("");
+
+    tbody.appendChild(tr);
+  });
+}
 
     
     function updateSummaryCards(data) {
